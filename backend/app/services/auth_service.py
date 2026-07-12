@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate
-from app.utils.security import hash_password
+from app.utils.jwt import create_access_token
+from app.utils.security import hash_password, verify_password
 
 
 class AuthService:
@@ -23,3 +24,21 @@ class AuthService:
         )
 
         return self.user_repository.create(user)
+
+    def login_user(self, email: str, password: str) -> str:
+        user = self.user_repository.get_by_email(email)
+
+        if not user:
+            raise ValueError("Invalid email or password")
+
+        if not verify_password(password, user.hashed_password):
+            raise ValueError("Invalid email or password")
+
+        access_token = create_access_token(
+            {
+                "sub": user.email,
+                "user_id": user.id,
+            }
+        )
+
+        return access_token
