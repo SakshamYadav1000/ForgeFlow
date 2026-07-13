@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.models.organization import Organization
 from app.models.organization_member import OrganizationMember
+from app.models.user import User
 from app.repositories.organization_member_repository import (
     OrganizationMemberRepository,
 )
@@ -17,8 +18,8 @@ class OrganizationService:
     def create_organization(
         self,
         organization_data: OrganizationCreate,
-        current_user,
-    ):
+        current_user: User,
+    ) -> Organization:
         existing = self.organization_repository.get_by_slug(
             organization_data.slug
         )
@@ -45,3 +46,11 @@ class OrganizationService:
         self.organization_member_repository.create(owner)
 
         return organization
+
+    def get_user_organizations(
+        self,
+        current_user: User,
+    ):
+        return self.organization_repository.get_user_organizations(
+            current_user.id
+        )

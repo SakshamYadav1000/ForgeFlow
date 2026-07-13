@@ -38,3 +38,16 @@ def create_organization(
             status_code=400,
             detail=str(e),
         )
+
+
+@router.get(
+    "",
+    response_model=list[OrganizationResponse],
+)
+def get_organizations(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    service = OrganizationService(db)
+
+    return service.get_user_organizations(current_user)

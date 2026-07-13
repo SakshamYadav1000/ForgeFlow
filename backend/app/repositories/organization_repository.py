@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.organization import Organization
+from app.models.organization_member import OrganizationMember
 
 
 class OrganizationRepository:
@@ -19,3 +20,14 @@ class OrganizationRepository:
         self.db.commit()
         self.db.refresh(organization)
         return organization
+
+    def get_user_organizations(self, user_id: int):
+        return (
+            self.db.query(Organization)
+            .join(
+                OrganizationMember,
+                Organization.id == OrganizationMember.organization_id,
+            )
+            .filter(OrganizationMember.user_id == user_id)
+            .all()
+        )
