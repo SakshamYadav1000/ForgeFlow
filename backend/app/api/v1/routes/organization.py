@@ -1,0 +1,40 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
+from app.dependencies.auth import get_current_user
+from app.schemas.organization import (
+    OrganizationCreate,
+    OrganizationResponse,
+)
+from app.services.organization_service import OrganizationService
+
+router = APIRouter(
+    prefix="/organizations",
+    tags=["Organizations"],
+)
+
+
+@router.post(
+    "",
+    response_model=OrganizationResponse,
+    status_code=201,
+)
+def create_organization(
+    organization: OrganizationCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    service = OrganizationService(db)
+
+    try:
+        return service.create_organization(
+            organization,
+            current_user,
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        )
