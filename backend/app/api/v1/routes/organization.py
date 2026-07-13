@@ -51,3 +51,27 @@ def get_organizations(
     service = OrganizationService(db)
 
     return service.get_user_organizations(current_user)
+
+
+@router.get(
+    "/{organization_id}",
+    response_model=OrganizationResponse,
+)
+def get_organization(
+    organization_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    service = OrganizationService(db)
+
+    try:
+        return service.get_user_organization(
+            organization_id,
+            current_user,
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
+        )
