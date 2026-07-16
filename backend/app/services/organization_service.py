@@ -2,14 +2,9 @@ from sqlalchemy.orm import Session
 
 from app.core.enums import OrganizationRole
 from app.core.exceptions import (
-    CannotChangeOwnerRoleException,
-    OrganizationMemberNotFoundException,
     OrganizationNotFoundException,
     OrganizationOwnerRequiredException,
     SlugAlreadyExistsException,
-    UserAlreadyMemberException,
-    UserNotFoundException,
-    CannotRemoveOwnerException,
 )
 from app.models.organization import Organization
 from app.models.organization_member import OrganizationMember
@@ -24,10 +19,6 @@ from app.repositories.user_repository import UserRepository
 from app.schemas.organization import (
     OrganizationCreate,
     OrganizationUpdate,
-)
-from app.schemas.organization_member import (
-    OrganizationMemberCreate,
-    OrganizationMemberUpdate,
 )
 
 
@@ -122,109 +113,6 @@ class OrganizationService:
             organization_id,
             current_user,
         )
-
-    def get_members(
-        self,
-        organization_id: int,
-        current_user: User,
-    ):
-        self._get_user_organization(
-            organization_id,
-            current_user,
-        )
-
-        return self.organization_member_repository.get_members(
-            organization_id
-        )
-
-    def add_member(
-        self,
-        organization_id: int,
-        member_data: OrganizationMemberCreate,
-        current_user: User,
-    ):
-        self._get_owned_organization(
-            organization_id,
-            current_user,
-        )
-
-        user = self.user_repository.get_by_id(
-            member_data.user_id
-        )
-
-        if user is None:
-            raise UserNotFoundException()
-
-        existing = self.organization_member_repository.get_member(
-            organization_id,
-            member_data.user_id,
-        )
-
-        if existing:
-            raise UserAlreadyMemberException()
-
-        member = OrganizationMember(
-            organization_id=organization_id,
-            user_id=member_data.user_id,
-            role=member_data.role,
-        )
-
-        return self.organization_member_repository.create(
-            member
-        )
-
-    def update_member_role(
-        self,
-        organization_id: int,
-        user_id: int,
-        member_data: OrganizationMemberUpdate,
-        current_user: User,
-    ):
-        self._get_owned_organization(
-            organization_id,
-            current_user,
-        )
-
-        member = self.organization_member_repository.get_member(
-            organization_id,
-            user_id,
-        )
-
-        if member is None:
-            raise OrganizationMemberNotFoundException()
-
-        if member.role == OrganizationRole.OWNER:
-            raise CannotChangeOwnerRoleException()
-
-        member.role = member_data.role
-
-        return self.organization_member_repository.update(
-            member
-        )
-
-    def remove_member(
-        self,
-        organization_id: int,
-        user_id: int,
-        current_user: User,
-    ) -> None:
-        self._get_owned_organization(
-            organization_id,
-            current_user,
-        )
-
-        member = self.organization_member_repository.get_member(
-            organization_id,
-            user_id,
-        )
-
-        if member is None:
-            raise OrganizationMemberNotFoundException()
-
-        if member.role == OrganizationRole.OWNER:
-            raise CannotRemoveOwnerException()
-
-        self.organization_member_repository.delete(member)
 
     def update_organization(
         self,

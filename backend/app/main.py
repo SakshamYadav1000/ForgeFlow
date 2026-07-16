@@ -4,6 +4,7 @@ from app.api.v1.routes.auth import router as auth_router
 from app.api.v1.routes.organization import (
     router as organization_router,
 )
+from app.api.v1.routes.organization_member import router as organization_member
 from app.core.exception_handlers import (
     register_exception_handlers,
 )
@@ -18,6 +19,7 @@ register_exception_handlers(app)
 
 app.include_router(auth_router)
 app.include_router(organization_router)
+app.include_router(organization_member)
 
 
 @app.get("/")
