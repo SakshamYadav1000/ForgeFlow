@@ -1,5 +1,10 @@
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import (
+    OrganizationNotFoundException,
+    OrganizationOwnerRequiredException,
+    SlugAlreadyExistsException,
+)
 from app.models.organization import Organization
 from app.models.organization_member import OrganizationMember
 from app.models.user import User
@@ -32,7 +37,7 @@ class OrganizationService:
         )
 
         if existing:
-            raise ValueError("Slug already exists")
+            raise SlugAlreadyExistsException()
 
         organization = Organization(
             name=organization_data.name,
@@ -77,7 +82,7 @@ class OrganizationService:
         )
 
         if organization is None:
-            raise ValueError("Organization not found")
+            raise OrganizationNotFoundException()
 
         return organization
 
@@ -95,12 +100,10 @@ class OrganizationService:
         )
 
         if organization is None:
-            raise ValueError("Organization not found")
+            raise OrganizationNotFoundException()
 
         if organization.created_by != current_user.id:
-            raise ValueError(
-                "Only the organization owner can update it"
-            )
+            raise OrganizationOwnerRequiredException()
 
         if (
             organization_data.slug
@@ -111,7 +114,7 @@ class OrganizationService:
             )
 
             if existing:
-                raise ValueError("Slug already exists")
+                raise SlugAlreadyExistsException()
 
         update_data = organization_data.model_dump(
             exclude_unset=True
@@ -123,3 +126,23 @@ class OrganizationService:
         return self.organization_repository.update(
             organization
         )
+
+    def delete_organization(
+        self,
+        organization_id: int,
+        current_user: User,
+    ) -> None:
+        organization = (
+            self.organization_repository.get_user_organization(
+                organization_id,
+                current_user.id,
+            )
+        )
+
+        if organization is None:
+            raise OrganizationNotFoundException()
+
+        if organization.created_by != current_user.id:
+            raise OrganizationOwnerRequiredException()
+
+        self.organization_repository.delete(organization)

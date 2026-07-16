@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -15,21 +15,14 @@ router = APIRouter(
 @router.post(
     "/register",
     response_model=UserResponse,
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
 )
 def register(
     user: UserCreate,
     db: Session = Depends(get_db),
 ):
     service = AuthService(db)
-
-    try:
-        return service.register_user(user)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail=str(e),
-        )
+    return service.register_user(user)
 
 
 @router.post(
@@ -42,19 +35,12 @@ def login(
 ):
     service = AuthService(db)
 
-    try:
-        access_token = service.login_user(
-            credentials.email,
-            credentials.password,
-        )
+    access_token = service.login_user(
+        credentials.email,
+        credentials.password,
+    )
 
-        return {
-            "access_token": access_token,
-            "token_type": "bearer",
-        }
-
-    except ValueError as e:
-        raise HTTPException(
-            status_code=401,
-            detail=str(e),
-        )
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+    }

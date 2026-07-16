@@ -1,5 +1,9 @@
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import (
+    EmailAlreadyRegisteredException,
+    InvalidCredentialsException,
+)
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate
@@ -15,7 +19,7 @@ class AuthService:
         existing_user = self.user_repository.get_by_email(user_data.email)
 
         if existing_user:
-            raise ValueError("Email already registered")
+            raise EmailAlreadyRegisteredException()
 
         user = User(
             full_name=user_data.full_name,
@@ -29,10 +33,10 @@ class AuthService:
         user = self.user_repository.get_by_email(email)
 
         if not user:
-            raise ValueError("Invalid email or password")
+            raise InvalidCredentialsException()
 
         if not verify_password(password, user.hashed_password):
-            raise ValueError("Invalid email or password")
+            raise InvalidCredentialsException()
 
         access_token = create_access_token(
             {

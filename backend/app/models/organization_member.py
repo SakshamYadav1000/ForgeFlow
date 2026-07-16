@@ -12,7 +12,10 @@ class OrganizationMember(Base):
 
     organization_id = Column(
         Integer,
-        ForeignKey("organizations.id"),
+        ForeignKey(
+            "organizations.id",
+            ondelete="CASCADE",
+        ),
         nullable=False,
     )
 

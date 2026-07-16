@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -19,7 +19,7 @@ router = APIRouter(
 @router.post(
     "",
     response_model=OrganizationResponse,
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
 )
 def create_organization(
     organization: OrganizationCreate,
@@ -28,17 +28,10 @@ def create_organization(
 ):
     service = OrganizationService(db)
 
-    try:
-        return service.create_organization(
-            organization,
-            current_user,
-        )
-
-    except ValueError as e:
-        raise HTTPException(
-            status_code=400,
-            detail=str(e),
-        )
+    return service.create_organization(
+        organization,
+        current_user,
+    )
 
 
 @router.get(
@@ -51,7 +44,9 @@ def get_organizations(
 ):
     service = OrganizationService(db)
 
-    return service.get_user_organizations(current_user)
+    return service.get_user_organizations(
+        current_user,
+    )
 
 
 @router.get(
@@ -65,17 +60,10 @@ def get_organization(
 ):
     service = OrganizationService(db)
 
-    try:
-        return service.get_user_organization(
-            organization_id,
-            current_user,
-        )
-
-    except ValueError as e:
-        raise HTTPException(
-            status_code=404,
-            detail=str(e),
-        )
+    return service.get_user_organization(
+        organization_id,
+        current_user,
+    )
 
 
 @router.patch(
@@ -90,23 +78,25 @@ def update_organization(
 ):
     service = OrganizationService(db)
 
-    try:
-        return service.update_organization(
-            organization_id,
-            organization,
-            current_user,
-        )
+    return service.update_organization(
+        organization_id,
+        organization,
+        current_user,
+    )
 
-    except ValueError as e:
-        message = str(e)
 
-        if message == "Organization not found":
-            raise HTTPException(
-                status_code=404,
-                detail=message,
-            )
+@router.delete(
+    "/{organization_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_organization(
+    organization_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    service = OrganizationService(db)
 
-        raise HTTPException(
-            status_code=400,
-            detail=message,
-        )
+    service.delete_organization(
+        organization_id,
+        current_user,
+    )

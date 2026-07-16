@@ -57,3 +57,10 @@ class OrganizationRepository:
         self.db.commit()
         self.db.refresh(organization)
         return organization
+
+    def delete(
+        self,
+        organization: Organization,
+    ):
+        self.db.delete(organization)
+        self.db.commit()
