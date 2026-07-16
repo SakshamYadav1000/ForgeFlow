@@ -51,3 +51,6 @@ class OrganizationMemberNotFoundException(NotFoundException):
 
 class CannotChangeOwnerRoleException(BadRequestException):
     detail = "The owner's role cannot be changed"
+
+class CannotRemoveOwnerException(BadRequestException):
+    detail = "The organization owner cannot be removed"

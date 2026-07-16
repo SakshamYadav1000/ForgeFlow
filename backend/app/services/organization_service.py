@@ -9,6 +9,7 @@ from app.core.exceptions import (
     SlugAlreadyExistsException,
     UserAlreadyMemberException,
     UserNotFoundException,
+    CannotRemoveOwnerException,
 )
 from app.models.organization import Organization
 from app.models.organization_member import OrganizationMember
@@ -200,6 +201,30 @@ class OrganizationService:
         return self.organization_member_repository.update(
             member
         )
+
+    def remove_member(
+        self,
+        organization_id: int,
+        user_id: int,
+        current_user: User,
+    ) -> None:
+        self._get_owned_organization(
+            organization_id,
+            current_user,
+        )
+
+        member = self.organization_member_repository.get_member(
+            organization_id,
+            user_id,
+        )
+
+        if member is None:
+            raise OrganizationMemberNotFoundException()
+
+        if member.role == OrganizationRole.OWNER:
+            raise CannotRemoveOwnerException()
+
+        self.organization_member_repository.delete(member)
 
     def update_organization(
         self,

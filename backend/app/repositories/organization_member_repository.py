@@ -50,3 +50,10 @@ class OrganizationMemberRepository:
         self.db.commit()
         self.db.refresh(member)
         return member
+    
+    def delete(
+        self,
+        member: OrganizationMember,
+    ):
+        self.db.delete(member)
+        self.db.commit()

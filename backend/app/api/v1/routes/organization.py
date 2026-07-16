@@ -126,6 +126,23 @@ def update_member_role(
         current_user,
     )
 
+@router.delete(
+    "/{organization_id}/members/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def remove_member(
+    organization_id: int,
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    service = OrganizationService(db)
+
+    service.remove_member(
+        organization_id,
+        user_id,
+        current_user,
+    )
 
 @router.patch(
     "/{organization_id}",
