@@ -27,6 +27,38 @@ class OrganizationService:
             OrganizationMemberRepository(db)
         )
 
+    def _get_user_organization(
+        self,
+        organization_id: int,
+        current_user: User,
+    ) -> Organization:
+        organization = (
+            self.organization_repository.get_user_organization(
+                organization_id,
+                current_user.id,
+            )
+        )
+
+        if organization is None:
+            raise OrganizationNotFoundException()
+
+        return organization
+
+    def _get_owned_organization(
+        self,
+        organization_id: int,
+        current_user: User,
+    ) -> Organization:
+        organization = self._get_user_organization(
+            organization_id,
+            current_user,
+        )
+
+        if organization.created_by != current_user.id:
+            raise OrganizationOwnerRequiredException()
+
+        return organization
+
     def create_organization(
         self,
         organization_data: OrganizationCreate,
@@ -74,17 +106,24 @@ class OrganizationService:
         organization_id: int,
         current_user: User,
     ) -> Organization:
-        organization = (
-            self.organization_repository.get_user_organization(
-                organization_id,
-                current_user.id,
-            )
+        return self._get_user_organization(
+            organization_id,
+            current_user,
         )
 
-        if organization is None:
-            raise OrganizationNotFoundException()
+    def get_members(
+        self,
+        organization_id: int,
+        current_user: User,
+    ):
+        self._get_user_organization(
+            organization_id,
+            current_user,
+        )
 
-        return organization
+        return self.organization_member_repository.get_members(
+            organization_id
+        )
 
     def update_organization(
         self,
@@ -92,18 +131,10 @@ class OrganizationService:
         organization_data: OrganizationUpdate,
         current_user: User,
     ) -> Organization:
-        organization = (
-            self.organization_repository.get_user_organization(
-                organization_id,
-                current_user.id,
-            )
+        organization = self._get_owned_organization(
+            organization_id,
+            current_user,
         )
-
-        if organization is None:
-            raise OrganizationNotFoundException()
-
-        if organization.created_by != current_user.id:
-            raise OrganizationOwnerRequiredException()
 
         if (
             organization_data.slug
@@ -132,17 +163,9 @@ class OrganizationService:
         organization_id: int,
         current_user: User,
     ) -> None:
-        organization = (
-            self.organization_repository.get_user_organization(
-                organization_id,
-                current_user.id,
-            )
+        organization = self._get_owned_organization(
+            organization_id,
+            current_user,
         )
-
-        if organization is None:
-            raise OrganizationNotFoundException()
-
-        if organization.created_by != current_user.id:
-            raise OrganizationOwnerRequiredException()
 
         self.organization_repository.delete(organization)

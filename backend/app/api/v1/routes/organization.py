@@ -8,6 +8,9 @@ from app.schemas.organization import (
     OrganizationResponse,
     OrganizationUpdate,
 )
+from app.schemas.organization_member import (
+    OrganizationMemberResponse,
+)
 from app.services.organization_service import OrganizationService
 
 router = APIRouter(
@@ -61,6 +64,23 @@ def get_organization(
     service = OrganizationService(db)
 
     return service.get_user_organization(
+        organization_id,
+        current_user,
+    )
+
+
+@router.get(
+    "/{organization_id}/members",
+    response_model=list[OrganizationMemberResponse],
+)
+def get_organization_members(
+    organization_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    service = OrganizationService(db)
+
+    return service.get_members(
         organization_id,
         current_user,
     )
