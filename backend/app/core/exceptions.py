@@ -35,3 +35,11 @@ class InvalidCredentialsException(UnauthorizedException):
 
 class OrganizationOwnerRequiredException(BadRequestException):
     detail = "Only the organization owner can perform this action"
+
+
+class UserAlreadyMemberException(BadRequestException):
+    detail = "User is already a member of this organization"
+
+
+class UserNotFoundException(NotFoundException):
+    detail = "User not found"

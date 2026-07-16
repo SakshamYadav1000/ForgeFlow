@@ -4,6 +4,8 @@ from app.core.exceptions import (
     OrganizationNotFoundException,
     OrganizationOwnerRequiredException,
     SlugAlreadyExistsException,
+    UserAlreadyMemberException,
+    UserNotFoundException,
 )
 from app.models.organization import Organization
 from app.models.organization_member import OrganizationMember
@@ -14,9 +16,13 @@ from app.repositories.organization_member_repository import (
 from app.repositories.organization_repository import (
     OrganizationRepository,
 )
+from app.repositories.user_repository import UserRepository
 from app.schemas.organization import (
     OrganizationCreate,
     OrganizationUpdate,
+)
+from app.schemas.organization_member import (
+    OrganizationMemberCreate,
 )
 
 
@@ -26,6 +32,7 @@ class OrganizationService:
         self.organization_member_repository = (
             OrganizationMemberRepository(db)
         )
+        self.user_repository = UserRepository(db)
 
     def _get_user_organization(
         self,
@@ -123,6 +130,42 @@ class OrganizationService:
 
         return self.organization_member_repository.get_members(
             organization_id
+        )
+
+    def add_member(
+        self,
+        organization_id: int,
+        member_data: OrganizationMemberCreate,
+        current_user: User,
+    ):
+        self._get_owned_organization(
+            organization_id,
+            current_user,
+        )
+
+        user = self.user_repository.get_by_id(
+            member_data.user_id
+        )
+
+        if user is None:
+            raise UserNotFoundException()
+
+        existing = self.organization_member_repository.get_member(
+            organization_id,
+            member_data.user_id,
+        )
+
+        if existing:
+            raise UserAlreadyMemberException()
+
+        member = OrganizationMember(
+            organization_id=organization_id,
+            user_id=member_data.user_id,
+            role=member_data.role,
+        )
+
+        return self.organization_member_repository.create(
+            member
         )
 
     def update_organization(

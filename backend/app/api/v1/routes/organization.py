@@ -9,6 +9,7 @@ from app.schemas.organization import (
     OrganizationUpdate,
 )
 from app.schemas.organization_member import (
+    OrganizationMemberCreate,
     OrganizationMemberResponse,
 )
 from app.services.organization_service import OrganizationService
@@ -47,9 +48,7 @@ def get_organizations(
 ):
     service = OrganizationService(db)
 
-    return service.get_user_organizations(
-        current_user,
-    )
+    return service.get_user_organizations(current_user)
 
 
 @router.get(
@@ -82,6 +81,26 @@ def get_organization_members(
 
     return service.get_members(
         organization_id,
+        current_user,
+    )
+
+
+@router.post(
+    "/{organization_id}/members",
+    response_model=OrganizationMemberResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_organization_member(
+    organization_id: int,
+    member: OrganizationMemberCreate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    service = OrganizationService(db)
+
+    return service.add_member(
+        organization_id,
+        member,
         current_user,
     )
 

@@ -28,3 +28,17 @@ class OrganizationMemberRepository:
             )
             .all()
         )
+
+    def get_member(
+        self,
+        organization_id: int,
+        user_id: int,
+    ):
+        return (
+            self.db.query(OrganizationMember)
+            .filter(
+                OrganizationMember.organization_id == organization_id,
+                OrganizationMember.user_id == user_id,
+            )
+            .first()
+        )
