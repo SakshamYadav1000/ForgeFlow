@@ -11,6 +11,13 @@ class OrganizationCreate(BaseModel):
     logo_url: Optional[str] = None
 
 
+class OrganizationUpdate(BaseModel):
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    logo_url: Optional[str] = None
+
+
 class OrganizationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

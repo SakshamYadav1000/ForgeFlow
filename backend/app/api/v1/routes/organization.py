@@ -6,6 +6,7 @@ from app.dependencies.auth import get_current_user
 from app.schemas.organization import (
     OrganizationCreate,
     OrganizationResponse,
+    OrganizationUpdate,
 )
 from app.services.organization_service import OrganizationService
 
@@ -74,4 +75,38 @@ def get_organization(
         raise HTTPException(
             status_code=404,
             detail=str(e),
+        )
+
+
+@router.patch(
+    "/{organization_id}",
+    response_model=OrganizationResponse,
+)
+def update_organization(
+    organization_id: int,
+    organization: OrganizationUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    service = OrganizationService(db)
+
+    try:
+        return service.update_organization(
+            organization_id,
+            organization,
+            current_user,
+        )
+
+    except ValueError as e:
+        message = str(e)
+
+        if message == "Organization not found":
+            raise HTTPException(
+                status_code=404,
+                detail=message,
+            )
+
+        raise HTTPException(
+            status_code=400,
+            detail=message,
         )

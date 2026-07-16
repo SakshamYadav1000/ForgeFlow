@@ -49,3 +49,11 @@ class OrganizationRepository:
             )
             .first()
         )
+
+    def update(
+        self,
+        organization: Organization,
+    ):
+        self.db.commit()
+        self.db.refresh(organization)
+        return organization

@@ -9,7 +9,10 @@ from app.repositories.organization_member_repository import (
 from app.repositories.organization_repository import (
     OrganizationRepository,
 )
-from app.schemas.organization import OrganizationCreate
+from app.schemas.organization import (
+    OrganizationCreate,
+    OrganizationUpdate,
+)
 
 
 class OrganizationService:
@@ -77,3 +80,46 @@ class OrganizationService:
             raise ValueError("Organization not found")
 
         return organization
+
+    def update_organization(
+        self,
+        organization_id: int,
+        organization_data: OrganizationUpdate,
+        current_user: User,
+    ) -> Organization:
+        organization = (
+            self.organization_repository.get_user_organization(
+                organization_id,
+                current_user.id,
+            )
+        )
+
+        if organization is None:
+            raise ValueError("Organization not found")
+
+        if organization.created_by != current_user.id:
+            raise ValueError(
+                "Only the organization owner can update it"
+            )
+
+        if (
+            organization_data.slug
+            and organization_data.slug != organization.slug
+        ):
+            existing = self.organization_repository.get_by_slug(
+                organization_data.slug
+            )
+
+            if existing:
+                raise ValueError("Slug already exists")
+
+        update_data = organization_data.model_dump(
+            exclude_unset=True
+        )
+
+        for field, value in update_data.items():
+            setattr(organization, field, value)
+
+        return self.organization_repository.update(
+            organization
+        )
