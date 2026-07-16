@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session
 
+from app.core.enums import OrganizationRole
 from app.core.exceptions import (
+    CannotChangeOwnerRoleException,
+    OrganizationMemberNotFoundException,
     OrganizationNotFoundException,
     OrganizationOwnerRequiredException,
     SlugAlreadyExistsException,
@@ -23,6 +26,7 @@ from app.schemas.organization import (
 )
 from app.schemas.organization_member import (
     OrganizationMemberCreate,
+    OrganizationMemberUpdate,
 )
 
 
@@ -93,7 +97,7 @@ class OrganizationService:
         owner = OrganizationMember(
             organization_id=organization.id,
             user_id=current_user.id,
-            role="owner",
+            role=OrganizationRole.OWNER,
         )
 
         self.organization_member_repository.create(owner)
@@ -165,6 +169,35 @@ class OrganizationService:
         )
 
         return self.organization_member_repository.create(
+            member
+        )
+
+    def update_member_role(
+        self,
+        organization_id: int,
+        user_id: int,
+        member_data: OrganizationMemberUpdate,
+        current_user: User,
+    ):
+        self._get_owned_organization(
+            organization_id,
+            current_user,
+        )
+
+        member = self.organization_member_repository.get_member(
+            organization_id,
+            user_id,
+        )
+
+        if member is None:
+            raise OrganizationMemberNotFoundException()
+
+        if member.role == OrganizationRole.OWNER:
+            raise CannotChangeOwnerRoleException()
+
+        member.role = member_data.role
+
+        return self.organization_member_repository.update(
             member
         )
 

@@ -2,10 +2,16 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
+from app.core.enums import OrganizationRole
+
 
 class OrganizationMemberCreate(BaseModel):
     user_id: int
-    role: str = "member"
+    role: OrganizationRole = OrganizationRole.MEMBER
+
+
+class OrganizationMemberUpdate(BaseModel):
+    role: OrganizationRole
 
 
 class OrganizationMemberResponse(BaseModel):
@@ -14,5 +20,5 @@ class OrganizationMemberResponse(BaseModel):
     id: int
     organization_id: int
     user_id: int
-    role: str
+    role: OrganizationRole
     joined_at: datetime

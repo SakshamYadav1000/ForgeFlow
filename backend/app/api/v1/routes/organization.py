@@ -11,6 +11,7 @@ from app.schemas.organization import (
 from app.schemas.organization_member import (
     OrganizationMemberCreate,
     OrganizationMemberResponse,
+    OrganizationMemberUpdate,
 )
 from app.services.organization_service import OrganizationService
 
@@ -100,6 +101,27 @@ def add_organization_member(
 
     return service.add_member(
         organization_id,
+        member,
+        current_user,
+    )
+
+
+@router.patch(
+    "/{organization_id}/members/{user_id}",
+    response_model=OrganizationMemberResponse,
+)
+def update_member_role(
+    organization_id: int,
+    user_id: int,
+    member: OrganizationMemberUpdate,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    service = OrganizationService(db)
+
+    return service.update_member_role(
+        organization_id,
+        user_id,
         member,
         current_user,
     )

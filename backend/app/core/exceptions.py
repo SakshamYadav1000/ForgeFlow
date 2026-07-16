@@ -43,3 +43,11 @@ class UserAlreadyMemberException(BadRequestException):
 
 class UserNotFoundException(NotFoundException):
     detail = "User not found"
+
+
+class OrganizationMemberNotFoundException(NotFoundException):
+    detail = "Organization member not found"
+
+
+class CannotChangeOwnerRoleException(BadRequestException):
+    detail = "The owner's role cannot be changed"

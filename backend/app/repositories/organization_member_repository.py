@@ -42,3 +42,11 @@ class OrganizationMemberRepository:
             )
             .first()
         )
+
+    def update(
+        self,
+        member: OrganizationMember,
+    ):
+        self.db.commit()
+        self.db.refresh(member)
+        return member
