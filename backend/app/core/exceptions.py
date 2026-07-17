@@ -61,3 +61,5 @@ class ProjectNotFoundException(NotFoundException):
 class ProjectKeyAlreadyExistsException(BadRequestException):
     detail = "Project key already exists"
 
+class IssueNotFoundException(NotFoundException):
+    detail = "Issue not found"

@@ -11,13 +11,12 @@ from app.schemas.project import (
 from app.services.project_service import ProjectService
 
 router = APIRouter(
-    prefix="/projects",
     tags=["Projects"],
 )
 
 
 @router.post(
-    "/organizations/{organization_id}",
+    "/organizations/{organization_id}/projects",
     response_model=ProjectResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -35,7 +34,7 @@ def create_project(
 
 
 @router.get(
-    "/organizations/{organization_id}",
+    "/organizations/{organization_id}/projects",
     response_model=list[ProjectResponse],
 )
 def get_projects(
@@ -50,7 +49,7 @@ def get_projects(
 
 
 @router.get(
-    "/{project_id}",
+    "/projects/{project_id}",
     response_model=ProjectResponse,
 )
 def get_project(
@@ -63,7 +62,7 @@ def get_project(
 
 
 @router.patch(
-    "/{project_id}",
+    "/projects/{project_id}",
     response_model=ProjectResponse,
 )
 def update_project(
@@ -80,7 +79,7 @@ def update_project(
 
 
 @router.delete(
-    "/{project_id}",
+    "/projects/{project_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_project(

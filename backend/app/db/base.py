@@ -9,3 +9,6 @@ from app.models.organization_member import OrganizationMember  # noqa: F401
 
 # Import project model
 from app.models.project import Project  # noqa: F401
+
+#import issue model
+from app.models.issue import Issue
