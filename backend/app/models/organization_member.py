@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
 from app.db.database import Base
 
@@ -35,4 +36,13 @@ class OrganizationMember(Base):
         DateTime,
         default=datetime.utcnow,
         nullable=False,
+    )
+
+    organization = relationship(
+        "Organization",
+        back_populates="members",
+    )
+
+    user = relationship(
+        "User",
     )

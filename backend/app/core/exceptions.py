@@ -54,3 +54,10 @@ class CannotChangeOwnerRoleException(BadRequestException):
 
 class CannotRemoveOwnerException(BadRequestException):
     detail = "The organization owner cannot be removed"
+
+class ProjectNotFoundException(NotFoundException):
+    detail = "Project not found"
+
+class ProjectKeyAlreadyExistsException(BadRequestException):
+    detail = "Project key already exists"
+

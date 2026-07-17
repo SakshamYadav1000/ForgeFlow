@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from app.db.database import Base
 
@@ -24,4 +25,21 @@ class Organization(Base):
         DateTime,
         default=datetime.utcnow,
         nullable=False,
+    )
+
+    members = relationship(
+        "OrganizationMember",
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+
+    creator = relationship(
+        "User",
+        foreign_keys=[created_by],
+    )
+
+    projects = relationship(
+        "Project",
+        back_populates="organization",
+        cascade="all, delete-orphan",
     )
