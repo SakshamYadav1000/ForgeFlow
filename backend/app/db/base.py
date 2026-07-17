@@ -12,3 +12,6 @@ from app.models.project import Project  # noqa: F401
 
 #import issue model
 from app.models.issue import Issue
+
+#import comment model
+from app.models.comment import Comment

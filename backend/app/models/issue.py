@@ -5,6 +5,8 @@ from sqlalchemy import Column, DateTime, Enum as SqlEnum, ForeignKey, Integer, S
 
 from app.db.database import Base
 
+from sqlalchemy.orm import relationship
+
 
 class IssueStatus(str, Enum):
     TODO = "TODO"
@@ -75,4 +77,10 @@ class Issue(Base):
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
         nullable=False,
+    )
+
+    comments = relationship(
+    "Comment",
+    back_populates="issue",
+    cascade="all, delete-orphan",
     )
