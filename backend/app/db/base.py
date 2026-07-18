@@ -15,3 +15,9 @@ from app.models.issue import Issue
 
 #import comment model
 from app.models.comment import Comment
+
+#import label
+from app.models.label import Label
+
+#import issue label
+from app.models.issue_label import IssueLabel

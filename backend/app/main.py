@@ -7,6 +7,8 @@ from app.api.v1.routes.organization_member import router as organization_member
 from app.api.v1.routes.project import router as project
 from app.api.v1.routes.issue import router as issue
 from app.api.v1.routes.comment import router as comment_router
+from app.api.v1.routes.label import router as label_router
+
 
 #exception handlers
 from app.core.exception_handlers import (
@@ -27,6 +29,7 @@ app.include_router(organization_member)
 app.include_router(project)
 app.include_router(issue)
 app.include_router(comment_router)
+app.include_router(label_router)
 
 
 @app.get("/")
