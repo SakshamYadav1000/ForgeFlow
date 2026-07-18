@@ -52,14 +52,26 @@ class OrganizationMemberNotFoundException(NotFoundException):
 class CannotChangeOwnerRoleException(BadRequestException):
     detail = "The owner's role cannot be changed"
 
+
 class CannotRemoveOwnerException(BadRequestException):
     detail = "The organization owner cannot be removed"
+
 
 class ProjectNotFoundException(NotFoundException):
     detail = "Project not found"
 
+
 class ProjectKeyAlreadyExistsException(BadRequestException):
     detail = "Project key already exists"
 
+
 class IssueNotFoundException(NotFoundException):
     detail = "Issue not found"
+
+
+class MilestoneNotFoundException(NotFoundException):
+    detail = "Milestone not found"
+
+
+class MilestoneProjectMismatchException(BadRequestException):
+    detail = "Milestone does not belong to this project"

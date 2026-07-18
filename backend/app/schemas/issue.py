@@ -21,6 +21,8 @@ class IssueBase(BaseModel):
 
     assignee_id: Optional[int] = None
 
+    milestone_id: Optional[int] = None
+
 
 class IssueCreate(IssueBase):
     pass
@@ -40,6 +42,8 @@ class IssueUpdate(BaseModel):
     priority: Optional[IssuePriority] = None
 
     assignee_id: Optional[int] = None
+
+    milestone_id: Optional[int] = None
 
 
 class IssueResponse(IssueBase):

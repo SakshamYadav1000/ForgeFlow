@@ -32,6 +32,12 @@ class Issue(Base):
         nullable=False,
     )
 
+    milestone_id = Column(
+        Integer,
+        ForeignKey("milestones.id", ondelete="SET NULL",),
+        nullable=True,
+    )
+
     title = Column(
         String,
         nullable=False,

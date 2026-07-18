@@ -2,14 +2,20 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import (
     IssueNotFoundException,
+    MilestoneNotFoundException,
+    MilestoneProjectMismatchException,
     OrganizationMemberNotFoundException,
     ProjectNotFoundException,
+    UserNotFoundException,
 )
 from app.models.issue import Issue
 from app.models.user import User
 from app.repositories.issue_repository import IssueRepository
+from app.repositories.milestone_repository import MilestoneRepository
+from app.repositories.organization_repository import (
+    OrganizationRepository,
+)
 from app.repositories.project_repository import ProjectRepository
-from app.repositories.organization_repository import OrganizationRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.issue import (
     IssueCreate,
@@ -23,6 +29,7 @@ class IssueService:
         self.issue_repository = IssueRepository(db)
         self.organization_repository = OrganizationRepository(db)
         self.user_repository = UserRepository(db)
+        self.milestone_repository = MilestoneRepository(db)
 
     def create_issue(
         self,
@@ -51,10 +58,22 @@ class IssueService:
             )
 
             if assignee is None:
-                raise IssueNotFoundException()
+                raise UserNotFoundException()
+
+        if issue_data.milestone_id is not None:
+            milestone = self.milestone_repository.get_by_id(
+                issue_data.milestone_id
+            )
+
+            if milestone is None:
+                raise MilestoneNotFoundException()
+
+            if milestone.project_id != project.id:
+                raise MilestoneProjectMismatchException()
 
         issue = Issue(
             project_id=project.id,
+            milestone_id=issue_data.milestone_id,
             title=issue_data.title,
             description=issue_data.description,
             priority=issue_data.priority,
@@ -114,6 +133,9 @@ class IssueService:
             issue.project_id
         )
 
+        if project is None:
+            raise ProjectNotFoundException()
+
         organization = (
             self.organization_repository.get_user_organization(
                 project.organization_id,
@@ -123,6 +145,35 @@ class IssueService:
 
         if organization is None:
             raise OrganizationMemberNotFoundException()
+
+        if issue_data.assignee_id is not None:
+            assignee = self.user_repository.get_by_id(
+                issue_data.assignee_id
+            )
+
+            if assignee is None:
+                raise UserNotFoundException()
+
+        if "milestone_id" in issue_data.model_fields_set:
+
+            if issue_data.milestone_id is not None:
+                milestone = (
+                    self.milestone_repository.get_by_id(
+                        issue_data.milestone_id
+                    )
+                )
+
+                if milestone is None:
+                    raise MilestoneNotFoundException()
+
+                if milestone.project_id != issue.project_id:
+                    raise (
+                        MilestoneProjectMismatchException()
+                    )
+
+            issue.milestone_id = (
+                issue_data.milestone_id
+            )
 
         if issue_data.title is not None:
             issue.title = issue_data.title
@@ -154,6 +205,9 @@ class IssueService:
         project = self.project_repository.get_by_id(
             issue.project_id
         )
+
+        if project is None:
+            raise ProjectNotFoundException()
 
         organization = (
             self.organization_repository.get_user_organization(
