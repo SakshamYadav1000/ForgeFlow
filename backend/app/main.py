@@ -8,6 +8,7 @@ from app.api.v1.routes.project import router as project
 from app.api.v1.routes.issue import router as issue
 from app.api.v1.routes.comment import router as comment_router
 from app.api.v1.routes.label import router as label_router
+from app.api.v1.routes.milestone import router as milestone_router
 
 
 #exception handlers
@@ -30,6 +31,7 @@ app.include_router(project)
 app.include_router(issue)
 app.include_router(comment_router)
 app.include_router(label_router)
+app.include_router(milestone_router)
 
 
 @app.get("/")

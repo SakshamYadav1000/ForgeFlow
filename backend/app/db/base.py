@@ -21,3 +21,7 @@ from app.models.label import Label
 
 #import issue label
 from app.models.issue_label import IssueLabel
+
+#import migration
+from app.models.milestone import Milestone
+
