@@ -10,6 +10,8 @@ from app.core.exceptions import (
 )
 from app.models.issue import Issue
 from app.models.user import User
+from app.models.issue import IssueStatus, IssuePriority
+
 from app.repositories.issue_repository import IssueRepository
 from app.repositories.milestone_repository import MilestoneRepository
 from app.repositories.organization_repository import OrganizationRepository
@@ -109,8 +111,16 @@ class IssueService:
         self,
         project_id: int,
         current_user: User,
+        title: str | None = None,
+        status: IssueStatus | None = None,
+        priority: IssuePriority | None = None,
+        assignee_id: int | None = None,
+        milestone_id: int | None = None,
+        reporter_id: int | None = None,
     ):
-        project = self.project_repository.get_by_id(project_id)
+        project = self.project_repository.get_by_id(
+            project_id
+        )
 
         if project is None:
             raise ProjectNotFoundException()
@@ -125,8 +135,14 @@ class IssueService:
         if organization is None:
             raise OrganizationMemberNotFoundException()
 
-        return self.issue_repository.get_by_project(
-            project_id
+        return self.issue_repository.search(
+            project_id=project_id,
+            title=title,
+            status=status,
+            priority=priority,
+            assignee_id=assignee_id,
+            milestone_id=milestone_id,
+            reporter_id=reporter_id,
         )
 
     def get_issue(

@@ -10,6 +10,10 @@ from app.schemas.issue import (
 )
 from app.services.issue_service import IssueService
 
+from app.models.user import User
+from app.models.issue import (
+    IssueStatus, IssuePriority
+)
 router = APIRouter(
     tags=["Issues"],
 )
@@ -37,14 +41,30 @@ def create_issue(
     "/projects/{project_id}/issues",
     response_model=list[IssueResponse],
 )
+@router.get(
+    "/projects/{project_id}/issues",
+    response_model=list[IssueResponse],
+)
 def get_project_issues(
     project_id: int,
+    title: str | None = None,
+    status: IssueStatus | None = None,
+    priority: IssuePriority | None = None,
+    assignee_id: int | None = None,
+    milestone_id: int | None = None,
+    reporter_id: int | None = None,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     return IssueService(db).get_project_issues(
-        project_id,
-        current_user,
+        project_id=project_id,
+        current_user=current_user,
+        title=title,
+        status=status,
+        priority=priority,
+        assignee_id=assignee_id,
+        milestone_id=milestone_id,
+        reporter_id=reporter_id,
     )
 
 

@@ -38,6 +38,52 @@ class IssueRepository:
             .all()
         )
 
+    def search(
+        self,
+        project_id: int,
+        title: str | None = None,
+        status=None,
+        priority=None,
+        assignee_id: int | None = None,
+        milestone_id: int | None = None,
+        reporter_id: int | None = None,
+    ):
+        query = self.db.query(Issue).filter(
+            Issue.project_id == project_id
+        )
+
+        if title:
+            query = query.filter(
+                Issue.title.ilike(f"%{title}%")
+            )
+
+        if status:
+            query = query.filter(
+                Issue.status == status
+            )
+
+        if priority:
+            query = query.filter(
+                Issue.priority == priority
+            )
+
+        if assignee_id:
+            query = query.filter(
+                Issue.assignee_id == assignee_id
+            )
+
+        if milestone_id:
+            query = query.filter(
+                Issue.milestone_id == milestone_id
+            )
+
+        if reporter_id:
+            query = query.filter(
+                Issue.reporter_id == reporter_id
+            )
+
+        return query.all()
+
     def update(
         self,
         issue: Issue,
