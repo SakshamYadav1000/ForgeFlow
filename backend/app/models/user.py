@@ -1,18 +1,24 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
-from sqlalchemy.orm import relationship
 
 
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
 
-    full_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    full_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
 
     email: Mapped[str] = mapped_column(
         String(255),
@@ -21,7 +27,10 @@ class User(Base):
         nullable=False,
     )
 
-    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+    )
 
     role: Mapped[str] = mapped_column(
         String(20),
@@ -56,8 +65,14 @@ class User(Base):
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
     )
-    
+
     comments = relationship(
-    "Comment",
-    back_populates="user",
+        "Comment",
+        back_populates="user",
+    )
+
+    notifications = relationship(
+        "Notification",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )

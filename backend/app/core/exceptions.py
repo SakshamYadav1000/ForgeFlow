@@ -91,3 +91,7 @@ class CannotDependOnSelfException(BadRequestException):
 
 class CrossProjectDependencyException(BadRequestException):
     detail = "Issues must belong to the same project"
+
+
+class NotificationNotFoundException(NotFoundException):
+    detail = "Notification not found"

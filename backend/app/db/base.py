@@ -27,3 +27,6 @@ from app.models.milestone import Milestone
 
 #import issue dependency
 from app.models.issue_dependency import IssueDependency
+
+#import notification 
+from app.models.notification import Notification

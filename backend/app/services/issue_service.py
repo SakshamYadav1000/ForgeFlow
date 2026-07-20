@@ -21,10 +21,14 @@ from app.schemas.issue import (
     IssueCreate,
     IssueUpdate,
 )
+from app.models.notification import NotificationType
+from app.services.notification_service import NotificationService
 
 
 class IssueService:
     def __init__(self, db: Session):
+        self.db = db
+
         self.project_repository = ProjectRepository(db)
         self.issue_repository = IssueRepository(db)
         self.organization_repository = OrganizationRepository(db)
@@ -81,7 +85,17 @@ class IssueService:
             reporter_id=current_user.id,
         )
 
-        return self.issue_repository.create(issue)
+        issue = self.issue_repository.create(issue)
+
+        if issue.assignee_id is not None:
+            NotificationService(self.db).create_notification(
+                user_id=issue.assignee_id,
+                title="Issue Assigned",
+                message=f"You have been assigned '{issue.title}'",
+                notification_type=NotificationType.ISSUE_ASSIGNED,
+            )
+
+        return issue
 
     def get_project_issues(
         self,
@@ -187,10 +201,25 @@ class IssueService:
         if issue_data.status is not None:
             issue.status = issue_data.status
 
+        old_assignee = issue.assignee_id
+
         if issue_data.assignee_id is not None:
             issue.assignee_id = issue_data.assignee_id
 
-        return self.issue_repository.update(issue)
+        issue = self.issue_repository.update(issue)
+
+        if (
+            issue.assignee_id is not None
+            and issue.assignee_id != old_assignee
+        ):
+            NotificationService(self.db).create_notification(
+                user_id=issue.assignee_id,
+                title="Issue Assigned",
+                message=f"You have been assigned '{issue.title}'",
+                notification_type=NotificationType.ISSUE_ASSIGNED,
+            )
+
+        return issue
 
     def delete_issue(
         self,
