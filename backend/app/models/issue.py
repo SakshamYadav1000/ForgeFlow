@@ -90,3 +90,15 @@ class Issue(Base):
     back_populates="issue",
     cascade="all, delete-orphan",
     )
+
+    dependencies = relationship(
+    "IssueDependency",
+    foreign_keys="IssueDependency.source_issue_id",
+    cascade="all, delete-orphan",
+    )
+
+    blocked_by = relationship(
+    "IssueDependency",
+    foreign_keys="IssueDependency.target_issue_id",
+    cascade="all, delete-orphan",
+    )

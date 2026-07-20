@@ -25,3 +25,5 @@ from app.models.issue_label import IssueLabel
 #import migration
 from app.models.milestone import Milestone
 
+#import issue dependency
+from app.models.issue_dependency import IssueDependency

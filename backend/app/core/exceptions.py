@@ -75,3 +75,19 @@ class MilestoneNotFoundException(NotFoundException):
 
 class MilestoneProjectMismatchException(BadRequestException):
     detail = "Milestone does not belong to this project"
+
+
+class IssueDependencyNotFoundException(NotFoundException):
+    detail = "Issue dependency not found"
+
+
+class IssueDependencyAlreadyExistsException(BadRequestException):
+    detail = "Issue dependency already exists"
+
+
+class CannotDependOnSelfException(BadRequestException):
+    detail = "An issue cannot depend on itself"
+
+
+class CrossProjectDependencyException(BadRequestException):
+    detail = "Issues must belong to the same project"
