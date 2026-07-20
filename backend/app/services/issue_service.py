@@ -12,9 +12,7 @@ from app.models.issue import Issue
 from app.models.user import User
 from app.repositories.issue_repository import IssueRepository
 from app.repositories.milestone_repository import MilestoneRepository
-from app.repositories.organization_repository import (
-    OrganizationRepository,
-)
+from app.repositories.organization_repository import OrganizationRepository
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.issue import (
@@ -24,6 +22,8 @@ from app.schemas.issue import (
 from app.models.notification import NotificationType
 from app.services.notification_service import NotificationService
 
+from app.services.activity_log_service import ActivityLogService
+from app.models.activity_log import ActivityType
 
 class IssueService:
     def __init__(self, db: Session):
@@ -94,6 +94,14 @@ class IssueService:
                 message=f"You have been assigned '{issue.title}'",
                 notification_type=NotificationType.ISSUE_ASSIGNED,
             )
+
+        ActivityLogService(self.db).create_activity(
+            user_id=current_user.id,
+            project_id=project.id,
+            issue_id=issue.id,
+            activity_type=ActivityType.ISSUE_CREATED,
+            description=f"Created issue '{issue.title}'",
+        )
 
         return issue
 
@@ -208,6 +216,14 @@ class IssueService:
 
         issue = self.issue_repository.update(issue)
 
+        ActivityLogService(self.db).create_activity(
+            project_id=project.id,
+            issue_id=issue.id,
+            user_id=current_user.id,
+            activity_type=ActivityType.ISSUE_UPDATED,
+            description=f"Updated issue '{issue.title}'",
+        )
+
         if (
             issue.assignee_id is not None
             and issue.assignee_id != old_assignee
@@ -247,5 +263,13 @@ class IssueService:
 
         if organization is None:
             raise OrganizationMemberNotFoundException()
+
+        ActivityLogService(self.db).create_activity(
+            project_id=project.id,
+            issue_id=issue.id,
+            user_id=current_user.id,
+            activity_type=ActivityType.ISSUE_DELETED,
+            description=f"Deleted issue '{issue.title}'",
+        )
 
         self.issue_repository.delete(issue)

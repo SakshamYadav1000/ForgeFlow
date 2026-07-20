@@ -9,11 +9,14 @@ from app.schemas.comment import (
     CommentCreate,
     CommentUpdate,
 )
-
+from app.services.activity_log_service import ActivityLogService
+from app.models.activity_log import ActivityType
 
 class CommentService:
 
     def __init__(self, db: Session):
+        self.db = db
+
         self.comment_repository = CommentRepository(db)
         self.issue_repository = IssueRepository(db)
 
@@ -27,8 +30,8 @@ class CommentService:
 
         if not issue:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Issue not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Issue not found",
             )
 
         comment = Comment(
@@ -37,7 +40,17 @@ class CommentService:
             content=comment_data.content,
         )
 
-        return self.comment_repository.create(comment)
+        comment = self.comment_repository.create(comment)
+
+        ActivityLogService(self.db).create_activity(
+            user_id=current_user.id,
+            project_id=issue.project_id,
+            issue_id=issue.id,
+            activity_type=ActivityType.COMMENT_CREATED,
+            description="Added a comment",
+        )
+
+        return comment
 
     def get_issue_comments(
         self,
@@ -109,5 +122,15 @@ class CommentService:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You can only delete your own comments",
             )
+        issue = self.issue_repository.get_by_id(
+            comment.issue_id
+        )
 
+        ActivityLogService(self.db).create_activity(
+            user_id=current_user.id,
+            project_id=issue.project_id,
+            issue_id=issue.id,
+            activity_type=ActivityType.COMMENT_DELETED,
+            description="Deleted a comment",
+        )
         self.comment_repository.delete(comment)

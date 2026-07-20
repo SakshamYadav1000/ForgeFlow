@@ -18,10 +18,13 @@ from app.schemas.project import (
     ProjectCreate,
     ProjectUpdate,
 )
-
+from app.services.activity_log_service import ActivityLogService
+from app.models.activity_log import ActivityType
 
 class ProjectService:
     def __init__(self, db: Session):
+        self.db = db
+
         self.organization_repository = OrganizationRepository(db)
         self.project_repository = ProjectRepository(db)
 
@@ -71,7 +74,16 @@ class ProjectService:
             created_by=current_user.id,
         )
 
-        return self.project_repository.create(project)
+        project = self.project_repository.create(project)
+
+        ActivityLogService(self.db).create_activity(
+            user_id=current_user.id,
+            project_id=project.id,
+            activity_type=ActivityType.PROJECT_CREATED,
+            description=f"Created project '{project.name}'",
+        )
+
+        return project
 
     def get_projects(
         self,
@@ -129,7 +141,16 @@ class ProjectService:
         if project_data.description is not None:
             project.description = project_data.description
 
-        return self.project_repository.update(project)
+        project = self.project_repository.update(project)
+
+        ActivityLogService(self.db).create_activity(
+            user_id=current_user.id,
+            project_id=project.id,
+            activity_type=ActivityType.PROJECT_UPDATED,
+            description=f"Updated project '{project.name}'",
+        )
+
+        return project
 
     def delete_project(
         self,
@@ -146,6 +167,13 @@ class ProjectService:
         self._get_owned_organization(
             project.organization_id,
             current_user,
+        )
+
+        ActivityLogService(self.db).create_activity(
+            user_id=current_user.id,
+            project_id=project.id,
+            activity_type=ActivityType.PROJECT_DELETED,
+            description=f"Deleted project '{project.name}'",
         )
 
         self.project_repository.delete(project)

@@ -6,19 +6,21 @@ from app.repositories.organization_member_repository import (
     OrganizationMemberRepository,
 )
 from app.repositories.project_repository import ProjectRepository
+from sqlalchemy.orm import Session
 
+from app.services.activity_log_service import ActivityLogService
+from app.models.activity_log import ActivityType
 
 class MilestoneService:
-    def __init__(self, db):
+
+    def __init__(self, db: Session):
+        self.db = db
+
         self.milestone_repository = MilestoneRepository(db)
         self.project_repository = ProjectRepository(db)
         self.organization_member_repository = (
             OrganizationMemberRepository(db)
         )
-
-    # ------------------------
-    # Create
-    # ------------------------
 
     def create_milestone(
         self,
@@ -54,9 +56,19 @@ class MilestoneService:
             due_date=milestone_data.due_date,
         )
 
-        return self.milestone_repository.create(
+        milestone = self.milestone_repository.create(
             milestone
         )
+
+        ActivityLogService(self.db).create_activity(
+            user_id=current_user.id,
+            project_id=project.id,
+            issue_id=None,
+            activity_type=ActivityType.MILESTONE_CREATED,
+            description=f"Created milestone '{milestone.title}'",
+        )
+
+        return milestone
 
     # ------------------------
     # Read
@@ -150,9 +162,19 @@ class MilestoneService:
                 value,
             )
 
-        return self.milestone_repository.update(
+        milestone = self.milestone_repository.update(
             milestone
         )
+
+        ActivityLogService(self.db).create_activity(
+            user_id=current_user.id,
+            project_id=project.id,
+            issue_id=None,
+            activity_type=ActivityType.MILESTONE_UPDATED,
+            description=f"Updated milestone '{milestone.title}'",
+        )
+
+        return milestone
 
     # ------------------------
     # Delete
@@ -183,6 +205,14 @@ class MilestoneService:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied",
             )
+        
+        ActivityLogService(self.db).create_activity(
+            user_id=current_user.id,
+            project_id=project.id,
+            issue_id=None,
+            activity_type=ActivityType.MILESTONE_DELETED,
+            description=f"Deleted milestone '{milestone.title}'",
+        )
 
         self.milestone_repository.delete(
             milestone

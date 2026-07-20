@@ -9,21 +9,20 @@ from app.core.exceptions import (
 from app.models.organization import Organization
 from app.models.organization_member import OrganizationMember
 from app.models.user import User
-from app.repositories.organization_member_repository import (
-    OrganizationMemberRepository,
-)
-from app.repositories.organization_repository import (
-    OrganizationRepository,
-)
+from app.repositories.organization_member_repository import OrganizationMemberRepository
+from app.repositories.organization_repository import OrganizationRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.organization import (
     OrganizationCreate,
     OrganizationUpdate,
 )
-
+from app.services.activity_log_service import ActivityLogService
+from app.models.activity_log import ActivityType
 
 class OrganizationService:
     def __init__(self, db: Session):
+        self.db = db
+
         self.organization_repository = OrganizationRepository(db)
         self.organization_member_repository = (
             OrganizationMemberRepository(db)
@@ -94,6 +93,17 @@ class OrganizationService:
 
         self.organization_member_repository.create(owner)
 
+        ActivityLogService(self.db).create_activity(
+            organization_id=organization.id,
+            user_id=current_user.id,
+            action=ActivityType.ORGANIZATION_CREATED,
+            entity_type="Organization",
+            entity_id=organization.id,
+            description=(
+                f"Organization '{organization.name}' created"
+            ),
+        )
+
         return organization
 
     def get_user_organizations(
@@ -143,9 +153,24 @@ class OrganizationService:
         for field, value in update_data.items():
             setattr(organization, field, value)
 
-        return self.organization_repository.update(
-            organization
+        organization = (
+            self.organization_repository.update(
+                organization
+            )
         )
+
+        ActivityLogService(self.db).create_activity(
+            organization_id=organization.id,
+            user_id=current_user.id,
+            action=ActivityType.ORGANIZATION_UPDATED,
+            entity_type="Organization",
+            entity_id=organization.id,
+            description=(
+                f"Organization '{organization.name}' updated"
+            ),
+        )
+
+        return organization
 
     def delete_organization(
         self,
@@ -156,5 +181,15 @@ class OrganizationService:
             organization_id,
             current_user,
         )
-
+        
+        ActivityLogService(self.db).create_activity(
+            organization_id=organization.id,
+            user_id=current_user.id,
+            action=ActivityType.ORGANIZATION_DELETED,
+            entity_type="Organization",
+            entity_id=organization.id,
+            description=(
+                f"Organization '{organization.name}' deleted"
+            ),
+        )
         self.organization_repository.delete(organization)
