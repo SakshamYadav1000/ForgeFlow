@@ -12,6 +12,7 @@ from app.api.v1.routes.milestone import router as milestone_router
 from app.api.v1.routes.issue_dependency import router as issue_dependency
 from app.api.v1.routes.notification import router as notification
 from app.api.v1.routes.activity_log import router as activity_log
+from app.api.v1.routes.attachment import router as attachment
 
 
 #exception handlers
@@ -38,6 +39,7 @@ app.include_router(milestone_router)
 app.include_router(issue_dependency)
 app.include_router(notification)
 app.include_router(activity_log)
+app.include_router(attachment)
 
 
 @app.get("/")

@@ -33,3 +33,6 @@ from app.models.notification import Notification
 
 #import activity log
 from app.models.activity_log import ActivityLog
+
+#import attachment
+from app.models.attachment import Attachment
