@@ -53,9 +53,14 @@ def get_project_issues(
     assignee_id: int | None = None,
     milestone_id: int | None = None,
     reporter_id: int | None = None,
+    page: int = 1,
+    limit: int = 10,
+    sort_by: str = "created_at",
+    order: str = "desc",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    
     return IssueService(db).get_project_issues(
         project_id=project_id,
         current_user=current_user,
@@ -65,6 +70,10 @@ def get_project_issues(
         assignee_id=assignee_id,
         milestone_id=milestone_id,
         reporter_id=reporter_id,
+        page=page,
+        limit=limit,
+        sort_by=sort_by,
+        order=order,
     )
 
 

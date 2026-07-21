@@ -117,6 +117,10 @@ class IssueService:
         assignee_id: int | None = None,
         milestone_id: int | None = None,
         reporter_id: int | None = None,
+        page: int = 1,
+        limit: int = 10,
+        sort_by: str = "created_at",
+        order: str = "desc",
     ):
         project = self.project_repository.get_by_id(
             project_id
@@ -143,6 +147,10 @@ class IssueService:
             assignee_id=assignee_id,
             milestone_id=milestone_id,
             reporter_id=reporter_id,
+            page=page,
+            limit=limit,
+            sort_by=sort_by,
+            order=order,
         )
 
     def get_issue(

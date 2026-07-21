@@ -47,6 +47,10 @@ class IssueRepository:
         assignee_id: int | None = None,
         milestone_id: int | None = None,
         reporter_id: int | None = None,
+        page: int = 1,
+        limit: int = 10,
+        sort_by: str = "created_at",
+        order: str = "desc",
     ):
         query = self.db.query(Issue).filter(
             Issue.project_id == project_id
@@ -82,7 +86,32 @@ class IssueRepository:
                 Issue.reporter_id == reporter_id
             )
 
-        return query.all()
+        allowed_fields = {
+            "created_at": Issue.created_at,
+            "updated_at": Issue.updated_at,
+            "title": Issue.title,
+            "priority": Issue.priority,
+            "status": Issue.status,
+        }
+
+        sort_column = allowed_fields.get(
+            sort_by,
+            Issue.created_at,
+        )
+
+        if order.lower() == "asc":
+            query = query.order_by(sort_column.asc())
+        
+        else:
+            query = query.order_by(sort_column.desc())
+
+        offset = (page - 1) * limit
+
+        return (
+            query.offset(offset)
+            .limit(limit)
+            .all()
+        )
 
     def update(
         self,
