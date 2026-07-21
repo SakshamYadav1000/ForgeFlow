@@ -1,11 +1,7 @@
+import LoginPage from "./pages/auth/LoginPage";
+
 function App() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
-      <h1 className="text-5xl font-bold text-cyan-400">
-        ForgeFlow
-      </h1>
-    </div>
-  );
+  return <LoginPage />;
 }
 
 export default App;
