@@ -1,7 +1,14 @@
 from sqlalchemy.orm import Session
 
-from app.models.issue import Issue
+from sqlalchemy import func
 
+from datetime import datetime
+
+from app.models.issue import (
+    Issue,
+    IssuePriority,
+    IssueStatus,
+)
 
 class IssueRepository:
     def __init__(self, db: Session):
@@ -127,3 +134,51 @@ class IssueRepository:
     ):
         self.db.delete(issue)
         self.db.commit()
+
+#Dashboard
+    def count_by_project(
+        self,
+        project_id: int,
+    ):
+        return (
+            self.db.query(func.count(Issue.id))
+            .filter(Issue.project_id == project_id)
+            .scalar()
+        )
+
+
+    def count_by_status(
+        self,
+        project_id: int,
+        status: IssueStatus,
+    ):
+        return (
+            self.db.query(func.count(Issue.id))
+            .filter(
+                Issue.project_id == project_id,
+                Issue.status == status,
+            )
+            .scalar()
+        )
+
+
+    def count_by_priority(
+        self,
+        project_id: int,
+        priority: IssuePriority,
+    ):
+        return (
+            self.db.query(func.count(Issue.id))
+            .filter(
+                Issue.project_id == project_id,
+                Issue.priority == priority,
+            )
+            .scalar()
+        )
+
+
+    def count_overdue(
+        self,
+        project_id: int,
+    ):
+        return 0

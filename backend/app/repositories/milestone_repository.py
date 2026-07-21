@@ -1,7 +1,11 @@
 from sqlalchemy.orm import Session
 
-from app.models.milestone import Milestone
+from sqlalchemy import func
 
+from app.models.milestone import (
+    Milestone,
+    MilestoneStatus,
+)
 
 class MilestoneRepository:
     def __init__(self, db: Session):
@@ -52,3 +56,30 @@ class MilestoneRepository:
     ):
         self.db.delete(milestone)
         self.db.commit()
+
+#Dashboard
+    def count_by_project(
+        self,
+        project_id: int,
+    ):
+        return (
+            self.db.query(func.count(Milestone.id))
+            .filter(
+                Milestone.project_id == project_id
+            )
+            .scalar()
+        )
+
+
+    def count_completed(
+        self,
+        project_id: int,
+    ):
+        return (
+            self.db.query(func.count(Milestone.id))
+            .filter(
+                Milestone.project_id == project_id,
+                Milestone.status == MilestoneStatus.CLOSED,
+            )
+            .scalar()
+        )

@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 
+from sqlalchemy import func
+
 from app.models.activity_log import ActivityLog
 
 
@@ -59,4 +61,17 @@ class ActivityLogRepository:
                 ActivityLog.created_at.desc()
             )
             .all()
+        )
+    
+#Dashboard
+    def count_project_activity(
+        self,
+        project_id: int,
+    ):
+        return (
+            self.db.query(func.count(ActivityLog.id))
+            .filter(
+                ActivityLog.project_id == project_id
+            )
+            .scalar()
         )
