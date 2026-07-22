@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { login } from "../../services/authService";
+import { useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -21,7 +23,7 @@ const LoginForm = () => {
         response.access_token
       );
 
-      alert("Login Successful!");
+      navigate("/dashboard");
     } catch (error: any) {
         console.log("STATUS:", error.response?.status);
         console.log("DATA:", error.response?.data);
