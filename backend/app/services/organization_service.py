@@ -93,16 +93,16 @@ class OrganizationService:
 
         self.organization_member_repository.create(owner)
 
-        ActivityLogService(self.db).create_activity(
-            organization_id=organization.id,
-            user_id=current_user.id,
-            action=ActivityType.ORGANIZATION_CREATED,
-            entity_type="Organization",
-            entity_id=organization.id,
-            description=(
-                f"Organization '{organization.name}' created"
-            ),
-        )
+        # ActivityLogService(self.db).create_activity(
+        #     organization_id=organization.id,
+        #     user_id=current_user.id,
+        #     action=ActivityType.ORGANIZATION_CREATED,
+        #     entity_type="Organization",
+        #     entity_id=organization.id,
+        #     description=(
+        #         f"Organization '{organization.name}' created"
+        #     ),
+        # )
 
         return organization
 
@@ -159,16 +159,16 @@ class OrganizationService:
             )
         )
 
-        ActivityLogService(self.db).create_activity(
-            organization_id=organization.id,
-            user_id=current_user.id,
-            action=ActivityType.ORGANIZATION_UPDATED,
-            entity_type="Organization",
-            entity_id=organization.id,
-            description=(
-                f"Organization '{organization.name}' updated"
-            ),
-        )
+        # ActivityLogService(self.db).create_activity(
+        #     organization_id=organization.id,
+        #     user_id=current_user.id,
+        #     action=ActivityType.ORGANIZATION_UPDATED,
+        #     entity_type="Organization",
+        #     entity_id=organization.id,
+        #     description=(
+        #         f"Organization '{organization.name}' updated"
+        #     ),
+        # )
 
         return organization
 
@@ -182,14 +182,14 @@ class OrganizationService:
             current_user,
         )
         
-        ActivityLogService(self.db).create_activity(
-            organization_id=organization.id,
-            user_id=current_user.id,
-            action=ActivityType.ORGANIZATION_DELETED,
-            entity_type="Organization",
-            entity_id=organization.id,
-            description=(
-                f"Organization '{organization.name}' deleted"
-            ),
-        )
+        # ActivityLogService(self.db).create_activity(
+        #     organization_id=organization.id,
+        #     user_id=current_user.id,
+        #     action=ActivityType.ORGANIZATION_DELETED,
+        #     entity_type="Organization",
+        #     entity_id=organization.id,
+        #     description=(
+        #         f"Organization '{organization.name}' deleted"
+        #     ),
+        # )
         self.organization_repository.delete(organization)
