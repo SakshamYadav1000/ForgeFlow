@@ -2,6 +2,22 @@ import { useEffect, useState } from "react";
 
 import { getDashboard } from "../../services/dashboardService";
 import type { DashboardStats } from "../../types/dashboard";
+import MainLayout from "../../layouts/MainLayout";
+
+import StatCard from "../../components/ui/StatCard";
+
+import {
+  ClipboardList,
+  Clock3,
+  LoaderCircle,
+  CheckCircle2,
+  AlertTriangle,
+  CircleDot,
+  Flag,
+  CalendarDays,
+  CheckCheck,
+  Activity,
+} from "lucide-react";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -24,40 +40,78 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-8">
+    <MainLayout>
       <h1 className="mb-8 text-3xl font-bold">
-        ForgeFlow Dashboard
+        Dashboard
       </h1>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h2>Total Issues</h2>
-          <p className="mt-2 text-3xl font-bold">
-            {stats.total_issues}
-          </p>
-        </div>
+      <div className="grid grid-cols-4 gap-6">
+        <StatCard
+  title="Total Issues"
+  value={stats.total_issues}
+  icon={<ClipboardList size={24} />}
+/>
 
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h2>Todo</h2>
-          <p className="mt-2 text-3xl font-bold">
-            {stats.todo}
-          </p>
-        </div>
+<StatCard
+  title="Todo"
+  value={stats.todo}
+  icon={<Clock3 size={24} />}
+/>
 
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h2>In Progress</h2>
-          <p className="mt-2 text-3xl font-bold">
-            {stats.in_progress}
-          </p>
-        </div>
+<StatCard
+  title="In Progress"
+  value={stats.in_progress}
+  icon={<LoaderCircle size={24} />}
+/>
 
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h2>Completed</h2>
-          <p className="mt-2 text-3xl font-bold">
-            {stats.done}
-          </p>
-        </div>
+<StatCard
+  title="Completed"
+  value={stats.done}
+  icon={<CheckCircle2 size={24} />}
+/>
+
+<StatCard
+  title="High Priority"
+  value={stats.high_priority}
+  icon={<AlertTriangle size={24} />}
+/>
+
+<StatCard
+  title="Medium Priority"
+  value={stats.medium_priority}
+  icon={<CircleDot size={24} />}
+/>
+
+<StatCard
+  title="Low Priority"
+  value={stats.low_priority}
+  icon={<Flag size={24} />}
+/>
+
+<StatCard
+  title="Overdue Issues"
+  value={stats.overdue_issues}
+  icon={<AlertTriangle size={24} />}
+/>
+
+<StatCard
+  title="Milestones"
+  value={stats.total_milestones}
+  icon={<CalendarDays size={24} />}
+/>
+
+<StatCard
+  title="Completed Milestones"
+  value={stats.completed_milestones}
+  icon={<CheckCheck size={24} />}
+/>
+
+<StatCard
+  title="Recent Activity"
+  value={stats.recent_activity}
+  icon={<Activity size={24} />}
+/>
       </div>
-    </div>
+    </MainLayout>
   );
 }
