@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import MainLayout from "../../layouts/MainLayout";
 
@@ -54,6 +54,15 @@ export default function ProjectDashboardPage() {
               {dashboard.total_issues}
             </p>
           </div>
+
+<div className="mt-10">
+  <Link
+    to={`/projects/${projectId}/issues`}
+    className="rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-700"
+  >
+    View Issues
+  </Link>
+</div>
 
           <div className="rounded-xl bg-white p-6 shadow">
             <h2 className="text-gray-500">

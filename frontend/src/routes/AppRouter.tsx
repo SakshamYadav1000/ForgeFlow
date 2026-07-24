@@ -5,6 +5,7 @@ import DashboardPage from "../pages/dashboard/DashboardPage";
 import ProtectedRoute from "./ProtectedRoute";
 import ProjectsPage from "../pages/projects/ProjectsPage";
 import IssuesPage from "../pages/issues/IssuesPage";
+import IssueDetailsPage from "../pages/issues/IssueDetailsPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
 import ProfilePage from "../pages/profile/ProfilePage";
 import OrganizationsPage from "../pages/organizations/OrganizationsPage";
@@ -28,6 +29,11 @@ export default function AppRouter() {
         />
 
 <Route
+  path="/projects/:projectId/issues"
+  element={<IssuesPage />}
+/>
+
+<Route
   path="/organizations/:organizationId/projects"
   element={
     <ProtectedRoute>
@@ -41,6 +47,15 @@ export default function AppRouter() {
   element={
     <ProtectedRoute>
       <ProjectDashboardPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/issues/:issueId"
+  element={
+    <ProtectedRoute>
+      <IssueDetailsPage />
     </ProtectedRoute>
   }
 />
