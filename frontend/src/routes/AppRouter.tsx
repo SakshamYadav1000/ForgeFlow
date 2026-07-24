@@ -8,6 +8,7 @@ import IssuesPage from "../pages/issues/IssuesPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
 import ProfilePage from "../pages/profile/ProfilePage";
 import OrganizationsPage from "../pages/organizations/OrganizationsPage";
+import ProjectDashboardPage from "../pages/projects/ProjectDashboardPage";
 
 export default function AppRouter() {
   return (
@@ -25,6 +26,24 @@ export default function AppRouter() {
             </ProtectedRoute>
           }
         />
+
+<Route
+  path="/organizations/:organizationId/projects"
+  element={
+    <ProtectedRoute>
+      <ProjectsPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/projects/:projectId"
+  element={
+    <ProtectedRoute>
+      <ProjectDashboardPage />
+    </ProtectedRoute>
+  }
+/>
 
         <Route path="*" element={<Navigate to="/" replace />} />
 

@@ -1,9 +1,9 @@
-import api from "../api/axios";
-import type { DashboardStats } from "../types/dashboard";
+import api from "./api";
+import type { Dashboard } from "../types/dashboard";
 
 export const getDashboard = async (
   projectId: number
-): Promise<DashboardStats> => {
+): Promise<Dashboard> => {
   const response = await api.get(
     `/dashboard/projects/${projectId}`
   );

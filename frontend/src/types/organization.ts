@@ -1,6 +1,8 @@
 export interface Organization {
   id: number;
   name: string;
+  slug: string;
   description: string;
-  owner_id: number;
+  logo_url: string | null;
+  created_by: number;
 }

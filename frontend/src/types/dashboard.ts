@@ -1,5 +1,6 @@
-export interface DashboardStats {
+export interface Dashboard {
   total_issues: number;
+
   todo: number;
   in_progress: number;
   done: number;
