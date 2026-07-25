@@ -4,6 +4,7 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import LoginPage from "../pages/auth/LoginPage";
 import OrganizationsPage from "../pages/organizations/OrganizationsPage";
 import OrganizationDetailsPage from "../pages/organizations/OrganizationDetailsPage";
+import OrganizationMembersPage from "../pages/organizations/OrganizationMembersPage";
 import ProtectedRoute from "./ProtectedRoute";
 import ProjectsPage from "../pages/projects/ProjectsPage";
 import IssuesPage from "../pages/issues/IssuesPage";
@@ -21,10 +22,10 @@ export default function AppRouter() {
 
         <Route path="/login" element={<LoginPage />} />
 
-<Route
-  path="/register"
-  element={<RegisterPage />}
-/>
+        <Route
+          path="/register"
+          element={<RegisterPage />}
+        />
 
 
         <Route
@@ -36,46 +37,56 @@ export default function AppRouter() {
           }
         />
 
-<Route
-  path="/projects/:projectId/issues"
-  element={<IssuesPage />}
-/>
+        <Route
+          path="/projects/:projectId/issues"
+          element={<IssuesPage />}
+        />
 
-<Route
-  path="/organizations/:organizationId"
-  element={
-    <ProtectedRoute>
-      <OrganizationDetailsPage />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/organizations/:organizationId"
+          element={
+            <ProtectedRoute>
+              <OrganizationDetailsPage />
+            </ProtectedRoute>
+          }
+        />
 
-<Route
-  path="/organizations/:organizationId/projects"
-  element={
-    <ProtectedRoute>
-      <ProjectsPage />
-    </ProtectedRoute>
-  }
-/>
 
-<Route
-  path="/projects/:projectId"
-  element={
-    <ProtectedRoute>
-      <ProjectDashboardPage />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/organizations/:organizationId/projects"
+          element={
+            <ProtectedRoute>
+              <ProjectsPage />
+            </ProtectedRoute>
+          }
+        />
 
-<Route
-  path="/issues/:issueId"
-  element={
-    <ProtectedRoute>
-      <IssueDetailsPage />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/organizations/:organizationId/members"
+          element={
+            <ProtectedRoute>
+              <OrganizationMembersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/projects/:projectId"
+          element={
+            <ProtectedRoute>
+              <ProjectDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/issues/:issueId"
+          element={
+            <ProtectedRoute>
+              <IssueDetailsPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<Navigate to="/" replace />} />
 

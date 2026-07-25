@@ -1,5 +1,10 @@
 import api from "./api";
 import type { Organization } from "../types/organization";
+import type {
+  OrganizationMember,
+  CreateOrganizationMemberRequest,
+  UpdateOrganizationMemberRequest,
+} from "../types/organizationMember";
 
 export interface CreateOrganizationRequest {
   name: string;
@@ -15,7 +20,7 @@ export interface UpdateOrganizationRequest {
   logo_url?: string;
 }
 
-// GET /organizations
+// GET organizations
 export const getOrganizations = async (): Promise<
   Organization[]
 > => {
@@ -26,7 +31,7 @@ export const getOrganizations = async (): Promise<
   return response.data;
 };
 
-// GET /organizations/{id}
+// GET organizations by id
 export const getOrganization = async (
   organizationId: number
 ): Promise<Organization> => {
@@ -37,7 +42,7 @@ export const getOrganization = async (
   return response.data;
 };
 
-// POST /organizations
+// create organizations
 export const createOrganization = async (
   data: CreateOrganizationRequest
 ): Promise<Organization> => {
@@ -49,7 +54,7 @@ export const createOrganization = async (
   return response.data;
 };
 
-// PATCH /organizations/{id}
+// update organizations by id
 export const updateOrganization = async (
   organizationId: number,
   data: UpdateOrganizationRequest
@@ -62,11 +67,61 @@ export const updateOrganization = async (
   return response.data;
 };
 
-// DELETE /organizations/{id}
+// DELETE organizations by id
 export const deleteOrganization = async (
   organizationId: number
 ): Promise<void> => {
   await api.delete(
     `/organizations/${organizationId}`
+  );
+};
+
+//get organisation members
+export const getOrganizationMembers = async (
+  organizationId: number
+): Promise<OrganizationMember[]> => {
+  const response = await api.get<OrganizationMember[]>(
+    `/organizations/${organizationId}/members`
+  );
+
+  return response.data;
+};
+
+//add organisation member
+export const addOrganizationMember = async (
+  organizationId: number,
+  data: CreateOrganizationMemberRequest
+): Promise<OrganizationMember> => {
+  const response =
+    await api.post<OrganizationMember>(
+      `/organizations/${organizationId}/members`,
+      data
+    );
+
+  return response.data;
+};
+
+//update members roles
+export const updateOrganizationMember = async (
+  organizationId: number,
+  userId: number,
+  data: UpdateOrganizationMemberRequest
+): Promise<OrganizationMember> => {
+  const response =
+    await api.patch<OrganizationMember>(
+      `/organizations/${organizationId}/members/${userId}`,
+      data
+    );
+
+  return response.data;
+};
+
+// Remove Organization Member
+export const removeOrganizationMember = async (
+  organizationId: number,
+  userId: number
+) => {
+  await api.delete(
+    `/organizations/${organizationId}/members/${userId}`
   );
 };
