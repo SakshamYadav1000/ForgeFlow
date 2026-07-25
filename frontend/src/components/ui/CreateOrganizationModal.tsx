@@ -6,7 +6,7 @@ interface CreateOrganizationModalProps {
     slug: string,
     description: string,
     logoUrl: string
-  ) => void;
+  ) => Promise<void>;
 }
 
 export default function CreateOrganizationModal({
@@ -16,6 +16,36 @@ export default function CreateOrganizationModal({
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    if (!name.trim() || !slug.trim()) {
+      alert("Name and Slug are required.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await onCreate(
+        name.trim(),
+        slug.trim(),
+        description.trim(),
+        logoUrl.trim()
+      );
+
+      setName("");
+      setSlug("");
+      setDescription("");
+      setLogoUrl("");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="rounded-xl bg-white p-6 shadow">
@@ -23,47 +53,52 @@ export default function CreateOrganizationModal({
         Create Organization
       </h2>
 
-      <input
-        className="mb-3 w-full rounded border p-3"
-        placeholder="Organization Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-
-      <input
-        className="mb-3 w-full rounded border p-3"
-        placeholder="Slug (example: forgeflow)"
-        value={slug}
-        onChange={(e) => setSlug(e.target.value)}
-      />
-
-      <textarea
-        className="mb-3 w-full rounded border p-3"
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-
-      <input
-        className="mb-4 w-full rounded border p-3"
-        placeholder="Logo URL"
-        value={logoUrl}
-        onChange={(e) => setLogoUrl(e.target.value)}
-      />
-
-      <button
-        onClick={() =>
-          onCreate(
-            name,
-            slug,
-            description,
-            logoUrl
-          )
-        }
-        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-3"
       >
-        Create Organization
-      </button>
+        <input
+          className="w-full rounded border p-3"
+          placeholder="Organization Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          className="w-full rounded border p-3"
+          placeholder="Slug (example: forgeflow)"
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+        />
+
+        <textarea
+          className="w-full rounded border p-3"
+          placeholder="Description (Optional)"
+          value={description}
+          onChange={(e) =>
+            setDescription(e.target.value)
+          }
+        />
+
+        <input
+          className="w-full rounded border p-3"
+          placeholder="Logo URL (Optional)"
+          value={logoUrl}
+          onChange={(e) =>
+            setLogoUrl(e.target.value)
+          }
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {loading
+            ? "Creating..."
+            : "Create Organization"}
+        </button>
+      </form>
     </div>
   );
 }

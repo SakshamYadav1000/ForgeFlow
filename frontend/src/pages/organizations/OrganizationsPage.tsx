@@ -16,6 +16,8 @@ export default function OrganizationsPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchOrganizations = async () => {
+    setLoading(true);
+
     try {
       const data = await getOrganizations();
       setOrganizations(data);
@@ -44,10 +46,12 @@ export default function OrganizationsPage() {
 
       alert("Organization created successfully!");
     } catch (error: any) {
-      console.log(error.response?.data);
       console.error(error);
 
-      alert("Failed to create organization.");
+      alert(
+        error.response?.data?.detail ??
+          "Failed to create organization."
+      );
     }
   };
 
@@ -57,22 +61,31 @@ export default function OrganizationsPage() {
 
   return (
     <MainLayout>
-      <h1 className="mb-8 text-3xl font-bold">
-        Organizations
-      </h1>
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">
+          Organizations
+        </h1>
 
-      <div className="mb-8">
         <CreateOrganizationModal
           onCreate={handleCreateOrganization}
         />
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <p>Loading organizations...</p>
       ) : organizations.length === 0 ? (
-        <p>No organizations found.</p>
+        <div className="rounded-xl bg-white p-10 text-center shadow">
+          <h2 className="text-xl font-semibold">
+            No organizations found
+          </h2>
+
+          <p className="mt-2 text-gray-500">
+            Create your first organization to get
+            started.
+          </p>
+        </div>
       ) : (
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {organizations.map((organization) => (
             <OrganizationCard
               key={organization.id}
