@@ -1,5 +1,6 @@
 export interface Issue {
   id: number;
+
   title: string;
   description: string;
 
@@ -7,12 +8,11 @@ export interface Issue {
   priority: string;
 
   assignee_id: number | null;
+  milestone_id: number | null;
 
   project_id: number;
-  created_by: number;
+  reporter_id: number;
 
   created_at: string;
   updated_at: string;
-
-  due_date: string | null;
 }
