@@ -33,6 +33,7 @@ class OrganizationMemberService:
         )
         self.user_repository = UserRepository(db)
 
+    # ownership the organization
     def _get_owned_organization(
         self,
         organization_id: int,
@@ -53,6 +54,7 @@ class OrganizationMemberService:
 
         return organization
 
+    # GET members
     def get_members(
         self,
         organization_id: int,
@@ -67,6 +69,7 @@ class OrganizationMemberService:
             organization_id
         )
 
+    # create members
     def add_member(
         self,
         organization_id: int,
@@ -103,6 +106,7 @@ class OrganizationMemberService:
             member
         )
 
+    # PATCH member role
     def update_member_role(
         self,
         organization_id: int,
@@ -121,10 +125,21 @@ class OrganizationMemberService:
         )
 
         if member is None:
-            raise OrganizationNotFoundException()
+            raise OrganizationMemberNotFoundException()
 
-        if member.role == OrganizationRole.OWNER:
-            raise CannotChangeOwnerRoleException()
+        # not demoting the last remaining owner
+        if (
+            member.role == OrganizationRole.OWNER
+            and member_data.role != OrganizationRole.OWNER
+        ):
+            owner_count = (
+                self.organization_member_repository.count_owners(
+                    organization_id
+                )
+            )
+
+            if owner_count <= 1:
+                raise CannotChangeOwnerRoleException()
 
         member.role = member_data.role
 
@@ -132,6 +147,7 @@ class OrganizationMemberService:
             member
         )
 
+    # DELETE members
     def remove_member(
         self,
         organization_id: int,
@@ -149,9 +165,19 @@ class OrganizationMemberService:
         )
 
         if member is None:
-            raise OrganizationNotFoundException()
+            raise OrganizationMemberNotFoundException()
 
+        # secure the last remaining owner
         if member.role == OrganizationRole.OWNER:
-            raise CannotRemoveOwnerException()
+            owner_count = (
+                self.organization_member_repository.count_owners(
+                    organization_id
+                )
+            )
 
-        self.organization_member_repository.delete(member)
+            if owner_count <= 1:
+                raise CannotRemoveOwnerException()
+
+        self.organization_member_repository.delete(
+            member
+        )

@@ -14,13 +14,14 @@ from app.schemas.organization_member import (
     OrganizationMemberUpdate,
 )
 from app.services.organization_service import OrganizationService
+from app.services.organization_member_service import OrganizationMemberService
 
 router = APIRouter(
     prefix="/organizations",
     tags=["Organizations"],
 )
 
-
+#create organisation
 @router.post(
     "",
     response_model=OrganizationResponse,
@@ -38,7 +39,7 @@ def create_organization(
         current_user,
     )
 
-
+#get organisation
 @router.get(
     "",
     response_model=list[OrganizationResponse],
@@ -51,7 +52,7 @@ def get_organizations(
 
     return service.get_user_organizations(current_user)
 
-
+#get organisation by id
 @router.get(
     "/{organization_id}",
     response_model=OrganizationResponse,
@@ -68,7 +69,7 @@ def get_organization(
         current_user,
     )
 
-
+# Get organization members
 @router.get(
     "/{organization_id}/members",
     response_model=list[OrganizationMemberResponse],
@@ -78,14 +79,12 @@ def get_organization_members(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    service = OrganizationService(db)
-
-    return service.get_members(
+    return OrganizationMemberService(db).get_members(
         organization_id,
         current_user,
     )
 
-
+# Add member
 @router.post(
     "/{organization_id}/members",
     response_model=OrganizationMemberResponse,
@@ -97,15 +96,13 @@ def add_organization_member(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    service = OrganizationService(db)
-
-    return service.add_member(
+    return OrganizationMemberService(db).add_member(
         organization_id,
         member,
         current_user,
     )
 
-
+# Update member role
 @router.patch(
     "/{organization_id}/members/{user_id}",
     response_model=OrganizationMemberResponse,
@@ -117,15 +114,14 @@ def update_member_role(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    service = OrganizationService(db)
-
-    return service.update_member_role(
+    return OrganizationMemberService(db).update_member_role(
         organization_id,
         user_id,
         member,
         current_user,
     )
 
+# Remove member
 @router.delete(
     "/{organization_id}/members/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -136,14 +132,13 @@ def remove_member(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    service = OrganizationService(db)
-
-    service.remove_member(
+    OrganizationMemberService(db).remove_member(
         organization_id,
         user_id,
         current_user,
     )
 
+#update organisation
 @router.patch(
     "/{organization_id}",
     response_model=OrganizationResponse,
@@ -162,7 +157,7 @@ def update_organization(
         current_user,
     )
 
-
+#delete organization
 @router.delete(
     "/{organization_id}",
     status_code=status.HTTP_204_NO_CONTENT,

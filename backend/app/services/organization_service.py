@@ -158,6 +158,7 @@ class OrganizationService:
                 organization
             )
         )
+        return organization
 
         # ActivityLogService(self.db).create_activity(
         #     organization_id=organization.id,
@@ -170,7 +171,6 @@ class OrganizationService:
         #     ),
         # )
 
-        return organization
 
     def delete_organization(
         self,
@@ -181,6 +181,7 @@ class OrganizationService:
             organization_id,
             current_user,
         )
+        self.organization_repository.delete(organization)
         
         # ActivityLogService(self.db).create_activity(
         #     organization_id=organization.id,
@@ -192,4 +193,3 @@ class OrganizationService:
         #         f"Organization '{organization.name}' deleted"
         #     ),
         # )
-        self.organization_repository.delete(organization)
