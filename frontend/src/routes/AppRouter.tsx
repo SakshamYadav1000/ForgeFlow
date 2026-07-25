@@ -2,15 +2,16 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import RegisterPage from "../pages/auth/RegisterPage";
 import LoginPage from "../pages/auth/LoginPage";
-import DashboardPage from "../pages/dashboard/DashboardPage";
+import OrganizationsPage from "../pages/organizations/OrganizationsPage";
+import OrganizationDetailsPage from "../pages/organizations/OrganizationDetailsPage";
 import ProtectedRoute from "./ProtectedRoute";
 import ProjectsPage from "../pages/projects/ProjectsPage";
 import IssuesPage from "../pages/issues/IssuesPage";
 import IssueDetailsPage from "../pages/issues/IssueDetailsPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
 import ProfilePage from "../pages/profile/ProfilePage";
-import OrganizationsPage from "../pages/organizations/OrganizationsPage";
 import ProjectDashboardPage from "../pages/projects/ProjectDashboardPage";
+import DashboardPage from "../pages/dashboard/DashboardPage";
 
 export default function AppRouter() {
   return (
@@ -38,6 +39,15 @@ export default function AppRouter() {
 <Route
   path="/projects/:projectId/issues"
   element={<IssuesPage />}
+/>
+
+<Route
+  path="/organizations/:organizationId"
+  element={
+    <ProtectedRoute>
+      <OrganizationDetailsPage />
+    </ProtectedRoute>
+  }
 />
 
 <Route

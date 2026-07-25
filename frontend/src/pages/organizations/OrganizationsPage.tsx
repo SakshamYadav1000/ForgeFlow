@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import OrganizationCard from "../../components/ui/OrganizationCard";
 import CreateOrganizationModal from "../../components/ui/CreateOrganizationModal";
+import EditOrganizationModal from "../../components/ui/EditOrganizationModal";
 
 import {
   getOrganizations,
   createOrganization,
+  updateOrganization,
+  deleteOrganization,
 } from "../../services/organizationService";
 
 import type { Organization } from "../../types/organization";
@@ -14,6 +17,9 @@ import type { Organization } from "../../types/organization";
 export default function OrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [editingOrganization, setEditingOrganization] =
+    useState<Organization | null>(null);
 
   const fetchOrganizations = async () => {
     setLoading(true);
@@ -55,6 +61,61 @@ export default function OrganizationsPage() {
     }
   };
 
+  const handleUpdateOrganization = async (
+    id: number,
+    name: string,
+    slug: string,
+    description: string,
+    logoUrl: string
+  ) => {
+    try {
+      await updateOrganization(id, {
+        name,
+        slug,
+        description,
+        logo_url: logoUrl,
+      });
+
+      setEditingOrganization(null);
+
+      await fetchOrganizations();
+
+      alert("Organization updated successfully!");
+    } catch (error: any) {
+      console.error(error);
+
+      alert(
+        error.response?.data?.detail ??
+          "Failed to update organization."
+      );
+    }
+  };
+
+  const handleDeleteOrganization = async (
+    organization: Organization
+  ) => {
+    const confirmed = window.confirm(
+      `Delete "${organization.name}"?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteOrganization(organization.id);
+
+      await fetchOrganizations();
+
+      alert("Organization deleted successfully!");
+    } catch (error: any) {
+      console.error(error);
+
+      alert(
+        error.response?.data?.detail ??
+          "Failed to delete organization."
+      );
+    }
+  };
+
   useEffect(() => {
     fetchOrganizations();
   }, []);
@@ -90,9 +151,19 @@ export default function OrganizationsPage() {
             <OrganizationCard
               key={organization.id}
               organization={organization}
+              onEdit={setEditingOrganization}
+              onDelete={handleDeleteOrganization}
             />
           ))}
         </div>
+      )}
+
+      {editingOrganization && (
+        <EditOrganizationModal
+          organization={editingOrganization}
+          onClose={() => setEditingOrganization(null)}
+          onSave={handleUpdateOrganization}
+        />
       )}
     </MainLayout>
   );
