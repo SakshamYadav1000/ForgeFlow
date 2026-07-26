@@ -1,73 +1,219 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import MainLayout from "../../layouts/MainLayout";
-import { getIssues } from "../../services/issueService";
 
-import type { Issue } from "../../types/issue";
+import IssueCard from "../../components/issues/IssueCard";
+import CreateIssueModal from "../../components/issues/CreateIssueModal";
+
+import {
+  getProjectIssues,
+  createIssue,
+} from "../../services/issueService";
+
+import type {
+  Issue,
+  IssuePriority,
+} from "../../types/issue";
+
 
 export default function IssuesPage() {
+
+  // Project ID from URL
   const { projectId } = useParams();
 
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [loading, setLoading] = useState(true);
 
+  // Issues state
+  const [issues, setIssues] =
+    useState<Issue[]>([]);
+
+
+  // Loading state
+  const [loading, setLoading] =
+    useState(true);
+
+
+
+  // Fetch all issues of project
+  const fetchIssues = async () => {
+
+    if (!projectId) return;
+
+
+    try {
+
+      const data =
+        await getProjectIssues(
+          Number(projectId)
+        );
+
+
+      setIssues(data);
+
+
+    } catch (error) {
+
+      console.error(error);
+
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+
+  // Load issues when page opens
   useEffect(() => {
-    const fetchIssues = async () => {
-      if (!projectId) return;
-
-      try {
-        const data = await getIssues(Number(projectId));
-        setIssues(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
     fetchIssues();
+
   }, [projectId]);
 
+
+
+
+  // Create new issue
+  const handleCreateIssue = async (
+  title: string,
+  description: string,
+  priority: IssuePriority,
+  assignee_id: number | null,
+  milestone_id: number | null
+) => {
+
+
+    if (!projectId) return;
+
+
+    try {
+
+
+      await createIssue(
+        Number(projectId),
+        {
+          title,
+          description,
+          priority,
+          assignee_id,
+          milestone_id,
+        }
+      );
+
+
+
+      // Refresh list after creation
+      await fetchIssues();
+
+
+
+      alert(
+        "Issue created successfully!"
+      );
+
+
+    } catch (error) {
+
+
+      console.error(error);
+
+
+      alert(
+        "Failed to create issue."
+      );
+
+    }
+
+  };
+
+
+
   return (
+
     <MainLayout>
-      <h1 className="mb-8 text-3xl font-bold">
-        Issues
-      </h1>
+
+
+      {/* Page Header */}
+
+      <div className="mb-8 flex items-center justify-between">
+
+
+        <h1 className="text-3xl font-bold">
+          Issues
+        </h1>
+
+
+
+        {/* 
+          POST /projects/{project_id}/issues
+        */}
+
+        <CreateIssueModal
+          onCreate={handleCreateIssue}
+        />
+
+
+      </div>
+
+
+
+
+
+      {/* 
+        GET /projects/{project_id}/issues
+      */}
 
       {loading ? (
-        <p>Loading...</p>
+
+
+        <p>
+          Loading...
+        </p>
+
+
+
       ) : issues.length === 0 ? (
-        <p>No issues found.</p>
+
+
+        <p>
+          No issues found.
+        </p>
+
+
+
       ) : (
-        <div className="space-y-4">
+
+
+        <div className="grid gap-4">
+
+
           {issues.map((issue) => (
-            <Link
+
+
+            <IssueCard
+
               key={issue.id}
-              to={`/issues/${issue.id}`}
-              className="block rounded-xl bg-white p-6 shadow transition hover:shadow-lg hover:border-blue-500 border border-transparent"
-            >
-              <h2 className="text-xl font-semibold">
-                {issue.title}
-              </h2>
 
-              <p className="mt-2 text-gray-600">
-                {issue.description}
-              </p>
+              issue={issue}
 
-              <div className="mt-4 flex gap-6 text-sm">
-                <span>
-                  Status: <strong>{issue.status}</strong>
-                </span>
+            />
 
-                <span>
-                  Priority: <strong>{issue.priority}</strong>
-                </span>
-              </div>
-            </Link>
+
           ))}
+
+
         </div>
+
+
       )}
+
+
+
     </MainLayout>
+
   );
+
 }

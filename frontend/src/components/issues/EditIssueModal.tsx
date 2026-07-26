@@ -1,32 +1,35 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import type { Issue } from "../../types/issue";
+import type {
+  Issue,
+  UpdateIssueRequest,
+} from "../../types/issue";
 
-interface EditIssueModalProps {
-  issue: Issue;
+
+interface Props {
   open: boolean;
-  loading?: boolean;
+  issue: Issue;
+  loading: boolean;
   onClose: () => void;
-  onSave: (data: {
-    title: string;
-    description: string;
-    status: string;
-    priority: string;
-    assignee_id: number | null;
-    milestone_id: number | null;
-  }) => Promise<void>;
+  onSave: (
+    data: UpdateIssueRequest
+  ) => Promise<void>;
 }
 
+
 export default function EditIssueModal({
-  issue,
   open,
-  loading = false,
+  issue,
+  loading,
   onClose,
   onSave,
-}: EditIssueModalProps) {
-  const [title, setTitle] = useState(issue.title);
+}: Props) {
+
+  const [title, setTitle] =
+    useState(issue.title);
+
   const [description, setDescription] =
-    useState(issue.description);
+    useState(issue.description ?? "");
 
   const [status, setStatus] =
     useState(issue.status);
@@ -34,206 +37,124 @@ export default function EditIssueModal({
   const [priority, setPriority] =
     useState(issue.priority);
 
-  const [assigneeId, setAssigneeId] =
-    useState<number | null>(
-      issue.assignee_id
-    );
 
-  const [milestoneId, setMilestoneId] =
-    useState<number | null>(
-      issue.milestone_id
-    );
-
-  useEffect(() => {
-    setTitle(issue.title);
-    setDescription(issue.description);
-    setStatus(issue.status);
-    setPriority(issue.priority);
-    setAssigneeId(issue.assignee_id);
-    setMilestoneId(issue.milestone_id);
-  }, [issue]);
-
-  if (!open) return null;
-
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
 
     await onSave({
       title,
       description,
       status,
       priority,
-      assignee_id: assigneeId,
-      milestone_id: milestoneId,
+      assignee_id: issue.assignee_id,
+      milestone_id: issue.milestone_id,
     });
+
   };
 
+
+  if (!open) return null;
+
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-xl rounded-xl bg-white p-8">
-        <h2 className="mb-6 text-2xl font-bold">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/40">
+
+      <div className="rounded-xl bg-white p-6 shadow-lg w-96">
+
+        <h2 className="mb-4 text-xl font-bold">
           Edit Issue
         </h2>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
+
+        <input
+          className="mb-3 w-full rounded border p-3"
+          value={title}
+          onChange={(e) =>
+            setTitle(e.target.value)
+          }
+        />
+
+
+        <textarea
+          className="mb-3 w-full rounded border p-3"
+          value={description}
+          onChange={(e) =>
+            setDescription(e.target.value)
+          }
+        />
+
+
+        <select
+          className="mb-3 w-full rounded border p-3"
+          value={status}
+          onChange={(e) =>
+            setStatus(e.target.value as any)
+          }
         >
-          <div>
-            <label className="mb-2 block font-medium">
-              Title
-            </label>
+          <option value="TODO">
+            TODO
+          </option>
 
-            <input
-              value={title}
-              onChange={(e) =>
-                setTitle(e.target.value)
-              }
-              className="w-full rounded border p-3"
-              required
-            />
-          </div>
+          <option value="IN_PROGRESS">
+            IN PROGRESS
+          </option>
 
-          <div>
-            <label className="mb-2 block font-medium">
-              Description
-            </label>
+          <option value="DONE">
+            DONE
+          </option>
 
-            <textarea
-              rows={4}
-              value={description}
-              onChange={(e) =>
-                setDescription(
-                  e.target.value
-                )
-              }
-              className="w-full rounded border p-3"
-            />
-          </div>
+        </select>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-2 block font-medium">
-                Status
-              </label>
 
-              <select
-                value={status}
-                onChange={(e) =>
-                  setStatus(
-                    e.target.value
-                  )
-                }
-                className="w-full rounded border p-3"
-              >
-                <option value="TODO">
-                  TODO
-                </option>
+        <select
+          className="mb-3 w-full rounded border p-3"
+          value={priority}
+          onChange={(e) =>
+            setPriority(e.target.value as any)
+          }
+        >
+          <option value="LOW">
+            LOW
+          </option>
 
-                <option value="IN_PROGRESS">
-                  IN_PROGRESS
-                </option>
+          <option value="MEDIUM">
+            MEDIUM
+          </option>
 
-                <option value="DONE">
-                  DONE
-                </option>
-              </select>
-            </div>
+          <option value="HIGH">
+            HIGH
+          </option>
 
-            <div>
-              <label className="mb-2 block font-medium">
-                Priority
-              </label>
+          <option value="CRITICAL">
+            CRITICAL
+          </option>
 
-              <select
-                value={priority}
-                onChange={(e) =>
-                  setPriority(
-                    e.target.value
-                  )
-                }
-                className="w-full rounded border p-3"
-              >
-                <option value="LOW">
-                  LOW
-                </option>
+        </select>
 
-                <option value="MEDIUM">
-                  MEDIUM
-                </option>
 
-                <option value="HIGH">
-                  HIGH
-                </option>
-              </select>
-            </div>
-          </div>
+        <div className="flex justify-end gap-3">
 
-          <div>
-            <label className="mb-2 block font-medium">
-              Assignee ID
-            </label>
+          <button
+            onClick={onClose}
+            className="rounded bg-gray-300 px-4 py-2"
+          >
+            Cancel
+          </button>
 
-            <input
-              type="number"
-              value={assigneeId ?? ""}
-              onChange={(e) =>
-                setAssigneeId(
-                  e.target.value === ""
-                    ? null
-                    : Number(
-                        e.target.value
-                      )
-                )
-              }
-              className="w-full rounded border p-3"
-            />
-          </div>
 
-          <div>
-            <label className="mb-2 block font-medium">
-              Milestone ID
-            </label>
+          <button
+            disabled={loading}
+            onClick={handleSubmit}
+            className="rounded bg-blue-600 px-4 py-2 text-white"
+          >
+            {loading
+              ? "Saving..."
+              : "Save"}
+          </button>
 
-            <input
-              type="number"
-              value={milestoneId ?? ""}
-              onChange={(e) =>
-                setMilestoneId(
-                  e.target.value === ""
-                    ? null
-                    : Number(
-                        e.target.value
-                      )
-                )
-              }
-              className="w-full rounded border p-3"
-            />
-          </div>
+        </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded bg-gray-300 px-5 py-2"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="rounded bg-blue-600 px-5 py-2 text-white disabled:opacity-60"
-            >
-              {loading
-                ? "Saving..."
-                : "Save Changes"}
-            </button>
-          </div>
-        </form>
       </div>
+
     </div>
   );
 }

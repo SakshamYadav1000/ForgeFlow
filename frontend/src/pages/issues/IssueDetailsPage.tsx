@@ -14,7 +14,10 @@ import {
   deleteIssue,
 } from "../../services/issueService";
 
-import type { Issue } from "../../types/issue";
+import type {
+  Issue,
+  UpdateIssueRequest,
+} from "../../types/issue";
 
 export default function IssueDetailsPage() {
   const { issueId } = useParams();
@@ -37,7 +40,10 @@ export default function IssueDetailsPage() {
     if (!issueId) return;
 
     try {
-      const data = await getIssue(Number(issueId));
+      const data = await getIssue(
+        Number(issueId)
+      );
+
       setIssue(data);
     } catch (error) {
       console.error(error);
@@ -50,51 +56,54 @@ export default function IssueDetailsPage() {
     fetchIssue();
   }, [issueId]);
 
-  const handleUpdate = async (data: {
-    title: string;
-    description: string;
-    status: string;
-    priority: string;
-    assignee_id: number | null;
-    milestone_id: number | null;
-  }) => {
+  const handleUpdate = async (
+    data: UpdateIssueRequest
+  ) => {
     if (!issueId) return;
 
     try {
       setSaving(true);
 
-      await updateIssue(Number(issueId), data);
+      await updateIssue(
+        Number(issueId),
+        data
+      );
 
       await fetchIssue();
 
       setShowEditModal(false);
+
+      alert("Issue updated successfully.");
     } catch (error) {
       console.error(error);
+
       alert("Failed to update issue.");
     } finally {
       setSaving(false);
     }
   };
 
-const handleDelete = async () => {
-  if (!issueId) return;
+  const handleDelete = async () => {
+    if (!issue) return;
 
-  const confirmed = window.confirm(
-    "Are you sure you want to delete this issue?"
-  );
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this issue?"
+    );
 
-  if (!confirmed) return;
+    if (!confirmed) return;
 
-  try {
-    await deleteIssue(Number(issueId));
+    try {
+      await deleteIssue(issue.id);
 
-    navigate("/projects");
-  } catch (error) {
-    console.error(error);
+      alert("Issue deleted successfully.");
 
-    alert("Failed to delete issue.");
-  }
-};
+      navigate(-1);
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to delete issue.");
+    }
+  };
 
   return (
     <MainLayout>
@@ -105,26 +114,28 @@ const handleDelete = async () => {
       ) : (
         <>
           <div className="mb-8 flex items-center justify-between">
-  <h1 className="text-3xl font-bold">
-    Issue Details
-  </h1>
+            <h1 className="text-3xl font-bold">
+              Issue Details
+            </h1>
 
-  <div className="flex gap-3">
-    <button
-      onClick={() => setShowEditModal(true)}
-      className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
-    >
-      Edit Issue
-    </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() =>
+                  setShowEditModal(true)
+                }
+                className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
+              >
+                Edit Issue
+              </button>
 
-    <button
-      onClick={handleDelete}
-      className="rounded-lg bg-red-600 px-5 py-2 text-white hover:bg-red-700"
-    >
-      Delete Issue
-    </button>
-  </div>
-</div>
+              <button
+                onClick={handleDelete}
+                className="rounded-lg bg-red-600 px-5 py-2 text-white hover:bg-red-700"
+              >
+                Delete Issue
+              </button>
+            </div>
+          </div>
 
           <div className="rounded-xl bg-white p-8 shadow">
             <h2 className="text-2xl font-bold">

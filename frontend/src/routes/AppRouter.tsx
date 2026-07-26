@@ -1,26 +1,67 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
+
+// Auth Pages
 import RegisterPage from "../pages/auth/RegisterPage";
 import LoginPage from "../pages/auth/LoginPage";
+
+
+// Organization Pages
 import OrganizationsPage from "../pages/organizations/OrganizationsPage";
 import OrganizationDetailsPage from "../pages/organizations/OrganizationDetailsPage";
 import OrganizationMembersPage from "../pages/organizations/OrganizationMembersPage";
-import ProtectedRoute from "./ProtectedRoute";
+
+
+// Project Pages
 import ProjectsPage from "../pages/projects/ProjectsPage";
+import ProjectDetailsPage from "../pages/projects/ProjectDetailsPage";
+
+
+// Issue Pages
 import IssuesPage from "../pages/issues/IssuesPage";
 import IssueDetailsPage from "../pages/issues/IssueDetailsPage";
+
+
+// Other Pages
+import DashboardPage from "../pages/dashboard/DashboardPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
 import ProfilePage from "../pages/profile/ProfilePage";
-import ProjectDetailsPage from "../pages/projects/ProjectDetailsPage";
-import DashboardPage from "../pages/dashboard/DashboardPage";
+
+
+// Route Protection
+import ProtectedRoute from "./ProtectedRoute";
+
 
 export default function AppRouter() {
+
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        <Route path="/login" element={<LoginPage />} />
+      <Routes>
+
+
+        {/* Default redirect */}
+        <Route
+          path="/"
+          element={
+            <Navigate
+              to="/dashboard"
+              replace
+            />
+          }
+        />
+
+
+        {/* Authentication */}
+        <Route
+          path="/login"
+          element={<LoginPage />}
+        />
 
         <Route
           path="/register"
@@ -28,6 +69,8 @@ export default function AppRouter() {
         />
 
 
+
+        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -37,11 +80,23 @@ export default function AppRouter() {
           }
         />
 
+
+
+        {/* ORGANIZATIONS */}
+
+
+        {/* Organization list */}
         <Route
-          path="/projects/:projectId/issues"
-          element={<IssuesPage />}
+          path="/organizations"
+          element={
+            <ProtectedRoute>
+              <OrganizationsPage />
+            </ProtectedRoute>
+          }
         />
 
+
+        {/* Organization details */}
         <Route
           path="/organizations/:organizationId"
           element={
@@ -52,15 +107,7 @@ export default function AppRouter() {
         />
 
 
-        <Route
-          path="/organizations/:organizationId/projects"
-          element={
-            <ProtectedRoute>
-              <ProjectsPage />
-            </ProtectedRoute>
-          }
-        />
-
+        {/* Organization members */}
         <Route
           path="/organizations/:organizationId/members"
           element={
@@ -70,11 +117,49 @@ export default function AppRouter() {
           }
         />
 
+
+
+        {/* PROJECTS */}
+
+
+        {/* Organization projects */}
         <Route
-          path="/projects/:projectId"
-          element={<ProjectDetailsPage />}
+          path="/organizations/:organizationId/projects"
+          element={
+            <ProtectedRoute>
+              <ProjectsPage />
+            </ProtectedRoute>
+          }
         />
 
+
+        {/* Project details */}
+        <Route
+          path="/projects/:projectId"
+          element={
+            <ProtectedRoute>
+              <ProjectDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+
+        {/* ISSUES */}
+
+
+        {/* Project issues list */}
+        <Route
+          path="/projects/:projectId/issues"
+          element={
+            <ProtectedRoute>
+              <IssuesPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* Issue details */}
         <Route
           path="/issues/:issueId"
           element={
@@ -84,26 +169,12 @@ export default function AppRouter() {
           }
         />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
 
-        <Route
-          path="/projects"
-          element={
-            <ProtectedRoute>
-              <ProjectsPage />
-            </ProtectedRoute>
-          }
-        />
 
-        <Route
-          path="/issues"
-          element={
-            <ProtectedRoute>
-              <IssuesPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* USER */}
 
+
+        {/* Notifications */}
         <Route
           path="/notifications"
           element={
@@ -113,6 +184,8 @@ export default function AppRouter() {
           }
         />
 
+
+        {/* Profile */}
         <Route
           path="/profile"
           element={
@@ -121,15 +194,23 @@ export default function AppRouter() {
             </ProtectedRoute>
           }
         />
+
+
+
+        {/* Unknown routes */}
         <Route
-          path="/organizations"
+          path="*"
           element={
-            <ProtectedRoute>
-              <OrganizationsPage />
-            </ProtectedRoute>
+            <Navigate
+              to="/"
+              replace
+            />
           }
         />
+
+
       </Routes>
+
     </BrowserRouter>
   );
 }

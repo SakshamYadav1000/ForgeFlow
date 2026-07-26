@@ -13,6 +13,8 @@ import {
 
 import type { Project } from "../../types/project";
 
+import { Link } from "react-router-dom";
+
 
 export default function ProjectDetailsPage() {
 
@@ -186,6 +188,29 @@ const handleDeleteProject = async () => {
 
 
           <div className="rounded-xl bg-white p-6 shadow">
+
+  <h1 className="text-3xl font-bold">
+    {project.name}
+  </h1>
+
+
+  <p className="mt-4 text-gray-600">
+    {project.description}
+  </p>
+
+
+  <p className="mt-4 text-sm text-gray-400">
+    Key: {project.key}
+  </p>
+
+
+  <Link
+    to={`/projects/${project.id}/issues`}
+    className="mt-6 inline-block rounded-lg bg-green-600 px-5 py-2 text-white hover:bg-green-700"
+  >
+    View Issues
+  </Link>
+
 
 
             {/* Project Details */}
