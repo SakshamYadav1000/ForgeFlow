@@ -11,7 +11,7 @@ import IssuesPage from "../pages/issues/IssuesPage";
 import IssueDetailsPage from "../pages/issues/IssueDetailsPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
 import ProfilePage from "../pages/profile/ProfilePage";
-import ProjectDashboardPage from "../pages/projects/ProjectDashboardPage";
+import ProjectDetailsPage from "../pages/projects/ProjectDetailsPage";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 
 export default function AppRouter() {
@@ -72,11 +72,7 @@ export default function AppRouter() {
 
         <Route
           path="/projects/:projectId"
-          element={
-            <ProtectedRoute>
-              <ProjectDashboardPage />
-            </ProtectedRoute>
-          }
+          element={<ProjectDetailsPage />}
         />
 
         <Route
