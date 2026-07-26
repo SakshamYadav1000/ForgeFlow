@@ -41,10 +41,6 @@ def create_issue(
     "/projects/{project_id}/issues",
     response_model=list[IssueResponse],
 )
-@router.get(
-    "/projects/{project_id}/issues",
-    response_model=list[IssueResponse],
-)
 def get_project_issues(
     project_id: int,
     title: str | None = None,
