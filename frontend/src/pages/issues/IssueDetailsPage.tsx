@@ -8,16 +8,32 @@ import MainLayout from "../../layouts/MainLayout";
 
 import EditIssueModal from "../../components/issues/EditIssueModal";
 
+import CommentCard from "../../components/comments/CommentCard";
+import CreateCommentModal from "../../components/comments/CreateCommentModal";
+import EditCommentModal from "../../components/comments/EditCommentModal";
+
 import {
   getIssue,
   updateIssue,
   deleteIssue,
 } from "../../services/issueService";
 
+import {
+  createComment,
+  getIssueComments,
+  updateComment,
+  deleteComment,
+} from "../../services/commentService";
+
 import type {
   Issue,
   UpdateIssueRequest,
 } from "../../types/issue";
+
+import type {
+  Comment,
+  UpdateCommentRequest,
+} from "../../types/comment";
 
 export default function IssueDetailsPage() {
   const { issueId } = useParams();
@@ -27,14 +43,29 @@ export default function IssueDetailsPage() {
   const [issue, setIssue] =
     useState<Issue | null>(null);
 
+  const [comments, setComments] =
+    useState<Comment[]>([]);
+
   const [loading, setLoading] =
+    useState(true);
+
+  const [commentsLoading, setCommentsLoading] =
     useState(true);
 
   const [saving, setSaving] =
     useState(false);
 
+  const [commentSaving, setCommentSaving] =
+    useState(false);
+
   const [showEditModal, setShowEditModal] =
     useState(false);
+
+  const [showEditCommentModal, setShowEditCommentModal] =
+    useState(false);
+
+  const [selectedComment, setSelectedComment] =
+    useState<Comment | null>(null);
 
   const fetchIssue = async () => {
     if (!issueId) return;
@@ -52,8 +83,25 @@ export default function IssueDetailsPage() {
     }
   };
 
+  const fetchComments = async () => {
+    if (!issueId) return;
+
+    try {
+      const data = await getIssueComments(
+        Number(issueId)
+      );
+
+      setComments(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchIssue();
+    fetchComments();
   }, [issueId]);
 
   const handleUpdate = async (
@@ -102,6 +150,88 @@ export default function IssueDetailsPage() {
       console.error(error);
 
       alert("Failed to delete issue.");
+    }
+  };
+
+  const handleCreateComment = async (
+    content: string
+  ) => {
+    if (!issueId) return;
+
+    try {
+      await createComment(
+        Number(issueId),
+        { content }
+      );
+
+      await fetchComments();
+    } catch (error) {
+      console.error(error);
+
+      throw error;
+    }
+  };
+
+  const handleEditComment = (
+    comment: Comment
+  ) => {
+    setSelectedComment(comment);
+
+    setShowEditCommentModal(true);
+  };
+
+  const handleUpdateComment = async (
+    content: string
+  ) => {
+    if (!selectedComment) return;
+
+    try {
+      setCommentSaving(true);
+
+      const data: UpdateCommentRequest = {
+        content,
+      };
+
+      await updateComment(
+        selectedComment.id,
+        data
+      );
+
+      await fetchComments();
+
+      setShowEditCommentModal(false);
+
+      setSelectedComment(null);
+
+      alert("Comment updated successfully.");
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to update comment.");
+    } finally {
+      setCommentSaving(false);
+    }
+  };
+
+  const handleDeleteComment = async (
+    commentId: number
+  ) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this comment?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteComment(commentId);
+
+      await fetchComments();
+
+      alert("Comment deleted successfully.");
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to delete comment.");
     }
   };
 
@@ -231,6 +361,35 @@ export default function IssueDetailsPage() {
             </div>
           </div>
 
+          <div className="mt-8">
+            <h2 className="mb-4 text-2xl font-bold">
+              Comments
+            </h2>
+
+            <CreateCommentModal
+              onCreate={handleCreateComment}
+            />
+
+            <div className="mt-6 space-y-4">
+              {commentsLoading ? (
+                <p>Loading comments...</p>
+              ) : comments.length === 0 ? (
+                <p className="text-gray-500">
+                  No comments yet.
+                </p>
+              ) : (
+                comments.map((comment) => (
+                  <CommentCard
+                    key={comment.id}
+                    comment={comment}
+                    onEdit={handleEditComment}
+                    onDelete={handleDeleteComment}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+
           <EditIssueModal
             open={showEditModal}
             issue={issue}
@@ -239,6 +398,17 @@ export default function IssueDetailsPage() {
               setShowEditModal(false)
             }
             onSave={handleUpdate}
+          />
+
+          <EditCommentModal
+            open={showEditCommentModal}
+            comment={selectedComment}
+            loading={commentSaving}
+            onClose={() => {
+              setShowEditCommentModal(false);
+              setSelectedComment(null);
+            }}
+            onSave={handleUpdateComment}
           />
         </>
       )}
