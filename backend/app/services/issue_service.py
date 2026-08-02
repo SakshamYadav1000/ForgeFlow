@@ -153,6 +153,43 @@ class IssueService:
             order=order,
         )
 
+    def get_my_issues(
+        self,
+        current_user: User,
+    ):
+        organizations = (
+            self.organization_repository
+            .get_user_organizations(
+                current_user.id
+            )
+        )
+
+        project_ids = []
+
+        for organization in organizations:
+
+            projects = (
+                self.project_repository
+                .get_by_organization(
+                    organization.id
+                )
+            )
+
+            for project in projects:
+                project_ids.append(
+                    project.id
+                )
+
+        if not project_ids:
+            return []
+
+        return (
+            self.issue_repository
+            .get_by_projects(
+                project_ids
+            )
+        )
+
     def get_issue(
         self,
         issue_id: int,

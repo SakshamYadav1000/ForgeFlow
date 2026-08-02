@@ -72,6 +72,17 @@ def get_project_issues(
         order=order,
     )
 
+@router.get(
+    "/issues",
+    response_model=list[IssueResponse],
+)
+def get_my_issues(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return IssueService(db).get_my_issues(
+        current_user,
+    )
 
 @router.get(
     "/issues/{issue_id}",

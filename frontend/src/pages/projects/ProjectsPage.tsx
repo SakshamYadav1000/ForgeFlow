@@ -9,6 +9,7 @@ import CreateProjectModal from "../../components/ui/CreateProjectModal";
 import {
   getProjects,
   createProject,
+  getOrganizationProjects,
 } from "../../services/projectService";
 
 import type { Project } from "../../types/project";
@@ -34,30 +35,35 @@ export default function ProjectsPage() {
   // Fetch projects
   const fetchProjects = useCallback(async () => {
 
-    if (!organizationId) return;
+  try {
 
+    let data: Project[];
 
-    try {
+    if (organizationId) {
 
-      const data = await getProjects(
+      data = await getOrganizationProjects(
         Number(organizationId)
       );
 
-      setProjects(data);
+    } else {
 
-
-    } catch (error) {
-
-      console.error(error);
-
-
-    } finally {
-
-      setLoading(false);
+      data = await getProjects();
 
     }
 
-  }, [organizationId]);
+    setProjects(data);
+
+  } catch(error) {
+
+    console.error(error);
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+}, [organizationId]);
 
 
 

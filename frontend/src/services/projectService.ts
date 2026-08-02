@@ -25,7 +25,7 @@ export const createProject = async (
 
 
 // GET projects by organisation
-export const getProjects = async (
+export const getOrganizationProjects = async (
   organizationId: number
 ): Promise<Project[]> => {
 
@@ -37,7 +37,14 @@ export const getProjects = async (
   return response.data;
 };
 
+//get user projects
+export const getProjects = async (): Promise<Project[]> => {
+  const response = await api.get<Project[]>(
+    "/projects"
+  );
 
+  return response.data;
+};
 
 // GET projects
 export const getProject = async (

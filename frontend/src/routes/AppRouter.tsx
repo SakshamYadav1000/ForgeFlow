@@ -86,7 +86,26 @@ export default function AppRouter() {
           }
         />
 
+        {/* All Projects */}
+        <Route
+          path="/projects"
+          element={
+            <ProtectedRoute>
+              <ProjectsPage />
+            </ProtectedRoute>
+          }
+        />
 
+
+        {/* All Issues */}
+        <Route
+          path="/issues"
+          element={
+            <ProtectedRoute>
+              <IssuesPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ORGANIZATIONS */}
 
@@ -194,7 +213,7 @@ export default function AppRouter() {
           }
         />
 
-{/* // Project Milestones */}
+        {/* // Project Milestones */}
         <Route
           path="/projects/:projectId/milestones"
           element={
@@ -205,7 +224,7 @@ export default function AppRouter() {
         />
 
 
-{/* Single Milestone Details */}
+        {/* Single Milestone Details */}
         <Route
           path="/milestones/:milestoneId"
           element={

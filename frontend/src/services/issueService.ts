@@ -47,6 +47,18 @@ export const getProjectIssues = async (
   return response.data;
 };
 
+//Global issues
+export const getIssues = async (): Promise<Issue[]> => {
+
+  const response =
+    await api.get<Issue[]>(
+      "/issues"
+    );
+
+  return response.data;
+
+};
+
 // GET issues by id
 export const getIssue = async (
   issueId: number

@@ -33,6 +33,18 @@ class IssueRepository:
             .first()
         )
 
+    def get_by_projects(
+        self,
+        project_ids: list[int],
+    ):
+        return (
+            self.db.query(Issue)
+            .filter(
+                Issue.project_id.in_(project_ids)
+            )
+            .all()
+        )
+
     def get_by_project(
         self,
         project_id: int,

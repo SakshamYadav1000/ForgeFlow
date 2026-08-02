@@ -9,6 +9,7 @@ import CreateIssueModal from "../../components/issues/CreateIssueModal";
 import {
   getProjectIssues,
   createIssue,
+  getIssues,
 } from "../../services/issueService";
 
 import type {
@@ -37,15 +38,24 @@ export default function IssuesPage() {
   // Fetch all issues of project
   const fetchIssues = async () => {
 
-    if (!projectId) return;
-
-
     try {
 
-      const data =
-        await getProjectIssues(
-          Number(projectId)
-        );
+      let data: Issue[];
+
+
+      if (projectId) {
+
+        data =
+          await getProjectIssues(
+            Number(projectId)
+          );
+
+      } else {
+
+        data =
+          await getIssues();
+
+      }
 
 
       setIssues(data);
@@ -78,15 +88,23 @@ export default function IssuesPage() {
 
   // Create new issue
   const handleCreateIssue = async (
-  title: string,
-  description: string,
-  priority: IssuePriority,
-  assignee_id: number | null,
-  milestone_id: number | null
-) => {
+    title: string,
+    description: string,
+    priority: IssuePriority,
+    assignee_id: number | null,
+    milestone_id: number | null
+  ) => {
 
 
-    if (!projectId) return;
+    if (!projectId) {
+
+      alert(
+        "Open a project to create an issue."
+      );
+
+      return;
+
+    }
 
 
     try {
@@ -151,9 +169,13 @@ export default function IssuesPage() {
           POST /projects/{project_id}/issues
         */}
 
-        <CreateIssueModal
-          onCreate={handleCreateIssue}
-        />
+        {
+          projectId && (
+            <CreateIssueModal
+              onCreate={handleCreateIssue}
+            />
+          )
+        }
 
 
       </div>

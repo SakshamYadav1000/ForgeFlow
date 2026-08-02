@@ -104,6 +104,34 @@ class ProjectService:
             organization_id
         )
 
+    def get_my_projects(
+        self,
+        current_user: User,
+    ):
+        organizations = (
+            self.organization_repository
+            .get_user_organizations(
+                current_user.id
+            )
+        )
+
+        projects = []
+
+        for organization in organizations:
+
+            organization_projects = (
+                self.project_repository
+                .get_by_organization(
+                    organization.id
+                )
+            )
+
+            projects.extend(
+                organization_projects
+            )
+
+        return projects
+
     def get_project(
         self,
         project_id: int,

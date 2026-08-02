@@ -47,6 +47,17 @@ def get_projects(
         current_user,
     )
 
+@router.get(
+    "/projects",
+    response_model=list[ProjectResponse],
+)
+def get_my_projects(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    return ProjectService(db).get_my_projects(
+        current_user,
+    )
 
 @router.get(
     "/projects/{project_id}",
