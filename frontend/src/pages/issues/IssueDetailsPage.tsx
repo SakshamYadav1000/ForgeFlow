@@ -16,6 +16,7 @@ import {
   getIssue,
   updateIssue,
   deleteIssue,
+  getProjectIssues,
 } from "../../services/issueService";
 
 import {
@@ -35,6 +36,11 @@ import type {
   UpdateCommentRequest,
 } from "../../types/comment";
 
+import type {
+  IssueDependency,
+  DependencyType,
+} from "../../types/issueDependency";
+
 // for labels
 import AttachLabelModal from "../../components/labels/AttachLabelModal";
 
@@ -46,10 +52,20 @@ import {
   removeLabelFromIssue,
 } from "../../services/labelService";
 
+//for dependencies
+import DependencyCard from "../../components/dependencies/DependencyCard";
+import CreateDependencyModal from "../../components/dependencies/CreateDependencyModal";
+
 // for project
 import {
   getProject,
 } from "../../services/projectService";
+
+import {
+  createDependency,
+  getDependencies,
+  deleteDependency,
+} from "../../services/issueDependencyService";
 
 export default function IssueDetailsPage() {
   const { issueId } = useParams();
@@ -92,6 +108,19 @@ export default function IssueDetailsPage() {
 
   // Attach modal
   const [showAttachModal, setShowAttachModal] =
+    useState(false);
+
+  // Issue dependencies
+  const [dependencies, setDependencies] =
+    useState<IssueDependency[]>([]);
+
+  const [projectIssues, setProjectIssues] =
+    useState<Issue[]>([]);
+
+  const [dependenciesLoading, setDependenciesLoading] =
+    useState(true);
+
+  const [dependencySaving, setDependencySaving] =
     useState(false);
 
   // fetching
@@ -164,7 +193,63 @@ export default function IssueDetailsPage() {
     fetchIssue();
     fetchComments();
     fetchLabels();
+    fetchDependencies();
   }, [issueId]);
+
+  useEffect(() => {
+
+    if (issue) {
+      fetchProjectIssueList();
+    }
+  }, [issue]);
+
+  // Fetch issue dependencies
+  const fetchDependencies = async () => {
+
+    if (!issueId) return;
+
+    try {
+
+      const data =
+        await getDependencies(
+          Number(issueId)
+        );
+
+      setDependencies(data);
+
+    } catch (error) {
+
+      console.error(error);
+
+    } finally {
+
+      setDependenciesLoading(false);
+
+    }
+
+  };
+
+  // Fetch project issues for dependency selection
+  const fetchProjectIssueList = async () => {
+
+    if (!issue) return;
+
+    try {
+
+      const data =
+        await getProjectIssues(
+          issue.project_id
+        );
+
+      setProjectIssues(data);
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+  };
 
   const handleUpdate = async (
     data: UpdateIssueRequest
@@ -351,6 +436,100 @@ export default function IssueDetailsPage() {
     }
   };
 
+  const handleCreateDependency = async (
+    targetIssueId: number,
+    dependencyType: DependencyType
+  ) => {
+
+    if (!issue) return;
+
+    try {
+
+      setDependencySaving(true);
+
+      await createDependency(
+        issue.id,
+        {
+          target_issue_id: targetIssueId,
+          dependency_type: dependencyType,
+        }
+      );
+
+
+      await fetchDependencies();
+
+
+      alert(
+        "Dependency created successfully."
+      );
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to create dependency."
+      );
+
+
+    } finally {
+
+      setDependencySaving(false);
+
+    }
+
+  };
+
+
+
+  const handleDeleteDependency = async (
+    dependencyId: number
+  ) => {
+
+    if (!issue) return;
+
+
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to remove this dependency?"
+      );
+
+
+    if (!confirmed) return;
+
+
+
+    try {
+
+
+      await deleteDependency(
+        issue.id,
+        dependencyId
+      );
+
+
+      await fetchDependencies();
+
+
+      alert(
+        "Dependency removed successfully."
+      );
+
+
+    } catch (error) {
+
+      console.error(error);
+
+
+      alert(
+        "Failed to remove dependency."
+      );
+
+    }
+
+  };
+
   return (
     <MainLayout>
       {loading ? (
@@ -457,6 +636,59 @@ export default function IssueDetailsPage() {
                 </div>
 
               )}
+
+            </div>
+
+            <div className="mt-10">
+
+              <h2 className="mb-4 text-2xl font-bold">
+                Dependencies
+              </h2>
+
+
+              {
+                dependenciesLoading ? (
+
+                  <p>
+                    Loading dependencies...
+                  </p>
+
+                ) : dependencies.length === 0 ? (
+
+                  <p className="text-gray-500">
+                    No dependencies.
+                  </p>
+
+                ) : (
+
+                  <div className="space-y-4">
+
+                    {
+                      dependencies.map(
+                        (dependency) => (
+
+                          <DependencyCard
+
+                            key={dependency.id}
+
+                            dependency={dependency}
+
+                            onDelete={
+                              handleDeleteDependency
+                            }
+
+                          />
+
+                        )
+                      )
+                    }
+
+                  </div>
+
+                )
+
+              }
+
 
             </div>
 
@@ -609,6 +841,17 @@ export default function IssueDetailsPage() {
               setShowAttachModal(false)
             }
             onAttach={handleAttachLabel}
+          />
+
+          <CreateDependencyModal
+            issues={
+              projectIssues.filter(
+                (item) =>
+                  item.id !== issue.id
+              )
+            }
+            loading={dependencySaving}
+            onCreate={handleCreateDependency}
           />
 
         </>
