@@ -14,7 +14,7 @@ export default function OrganizationCard({
 }: OrganizationCardProps) {
   return (
     <Link
-      to={`/organizations/${organization.id}/projects`}
+      to={`/organizations/${organization.id}`}
       className="block rounded-xl bg-white p-6 shadow transition hover:shadow-lg hover:scale-[1.02]"
     >
       <h2 className="text-xl font-semibold">
@@ -30,6 +30,7 @@ export default function OrganizationCard({
       </p>
 
       <div className="mt-6 flex gap-3">
+
         <button
           type="button"
           onClick={(e) => {
@@ -37,7 +38,7 @@ export default function OrganizationCard({
             e.stopPropagation();
             onEdit(organization);
           }}
-          className="rounded bg-yellow-500 px-4 py-2 text-white transition hover:bg-yellow-600"
+          className="rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600"
         >
           Edit
         </button>
@@ -49,12 +50,11 @@ export default function OrganizationCard({
             e.stopPropagation();
             onDelete(organization);
           }}
-          className="rounded bg-red-600 px-4 py-2 text-white transition hover:bg-red-700"
+          className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
         >
           Delete
         </button>
 
-      // members
         <Link
           to={`/organizations/${organization.id}/members`}
           onClick={(e) => e.stopPropagation()}
@@ -64,7 +64,7 @@ export default function OrganizationCard({
         </Link>
 
       </div>
-    </Link>
 
+    </Link>
   );
 }

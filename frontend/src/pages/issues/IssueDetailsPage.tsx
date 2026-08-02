@@ -35,6 +35,22 @@ import type {
   UpdateCommentRequest,
 } from "../../types/comment";
 
+// for labels
+import AttachLabelModal from "../../components/labels/AttachLabelModal";
+
+import type { Label } from "../../types/label";
+
+import {
+  getIssueLabels,
+  attachLabelToIssue,
+  removeLabelFromIssue,
+} from "../../services/labelService";
+
+// for project
+import {
+  getProject,
+} from "../../services/projectService";
+
 export default function IssueDetailsPage() {
   const { issueId } = useParams();
 
@@ -67,20 +83,65 @@ export default function IssueDetailsPage() {
   const [selectedComment, setSelectedComment] =
     useState<Comment | null>(null);
 
+  const [organizationId, setOrganizationId] =
+    useState<number>();
+
+  // Attached labels
+  const [labels, setLabels] =
+    useState<Label[]>([]);
+
+  // Attach modal
+  const [showAttachModal, setShowAttachModal] =
+    useState(false);
+
+  // fetching
+
   const fetchIssue = async () => {
     if (!issueId) return;
 
     try {
-      const data = await getIssue(
-        Number(issueId)
-      );
+      const data =
+        await getIssue(
+          Number(issueId)
+        );
 
       setIssue(data);
+
+      const project =
+        await getProject(
+          data.project_id
+        );
+
+      setOrganizationId(
+        project.organization_id
+      );
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fetch labels attached to this issue
+  const fetchLabels = async () => {
+
+    if (!issueId) return;
+
+    try {
+
+      const data =
+        await getIssueLabels(
+          Number(issueId)
+        );
+
+      setLabels(data);
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
   };
 
   const fetchComments = async () => {
@@ -102,6 +163,7 @@ export default function IssueDetailsPage() {
   useEffect(() => {
     fetchIssue();
     fetchComments();
+    fetchLabels();
   }, [issueId]);
 
   const handleUpdate = async (
@@ -151,6 +213,60 @@ export default function IssueDetailsPage() {
 
       alert("Failed to delete issue.");
     }
+  };
+
+  const handleAttachLabel = async (
+    labelId: number
+  ) => {
+
+    if (!issue) return;
+
+    try {
+
+      await attachLabelToIssue(
+        issue.id,
+        labelId
+      );
+
+      await fetchLabels();
+
+      setShowAttachModal(false);
+
+      alert("Label attached.");
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert("Failed to attach label.");
+
+    }
+
+  };
+
+  const handleRemoveLabel = async (
+    labelId: number
+  ) => {
+
+    if (!issue) return;
+
+    try {
+
+      await removeLabelFromIssue(
+        issue.id,
+        labelId
+      );
+
+      await fetchLabels();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert("Failed to remove label.");
+
+    }
+
   };
 
   const handleCreateComment = async (
@@ -243,6 +359,7 @@ export default function IssueDetailsPage() {
         <p>Issue not found.</p>
       ) : (
         <>
+          {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <h1 className="text-3xl font-bold">
               Issue Details
@@ -267,7 +384,9 @@ export default function IssueDetailsPage() {
             </div>
           </div>
 
+          {/* Issue Information */}
           <div className="rounded-xl bg-white p-8 shadow">
+
             <h2 className="text-2xl font-bold">
               {issue.title}
             </h2>
@@ -276,7 +395,74 @@ export default function IssueDetailsPage() {
               {issue.description}
             </p>
 
+            {/* Labels */}
+            <div className="mt-8">
+
+              <div className="mb-4 flex items-center justify-between">
+
+                <h3 className="text-lg font-semibold">
+                  Labels
+                </h3>
+
+                <button
+                  onClick={() =>
+                    setShowAttachModal(true)
+                  }
+                  className="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                >
+                  Attach Label
+                </button>
+
+              </div>
+
+              {labels.length === 0 ? (
+
+                <p className="text-gray-500">
+                  No labels attached.
+                </p>
+
+              ) : (
+
+                <div className="flex flex-wrap gap-3">
+
+                  {labels.map((label) => (
+
+                    <div
+                      key={label.id}
+                      className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white"
+                      style={{
+                        backgroundColor:
+                          label.color,
+                      }}
+                    >
+                      <span>
+                        {label.name}
+                      </span>
+
+                      <button
+                        onClick={() =>
+                          handleRemoveLabel(
+                            label.id
+                          )
+                        }
+                        className="font-bold"
+                      >
+                        ×
+                      </button>
+
+                    </div>
+
+                  ))}
+
+                </div>
+
+              )}
+
+            </div>
+
+            {/* Issue Details */}
             <div className="mt-8 grid grid-cols-2 gap-6">
+
               <div>
                 <h3 className="text-sm text-gray-500">
                   Status
@@ -302,7 +488,9 @@ export default function IssueDetailsPage() {
                   Reporter
                 </h3>
 
-                <p>{issue.reporter_id}</p>
+                <p>
+                  {issue.reporter_id}
+                </p>
               </div>
 
               <div>
@@ -410,6 +598,19 @@ export default function IssueDetailsPage() {
             }}
             onSave={handleUpdateComment}
           />
+
+          <AttachLabelModal
+            open={showAttachModal}
+            organizationId={
+              organizationId ?? 0
+            }
+            loading={false}
+            onClose={() =>
+              setShowAttachModal(false)
+            }
+            onAttach={handleAttachLabel}
+          />
+
         </>
       )}
     </MainLayout>

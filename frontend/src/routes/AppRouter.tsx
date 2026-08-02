@@ -26,12 +26,14 @@ import ProjectDetailsPage from "../pages/projects/ProjectDetailsPage";
 import IssuesPage from "../pages/issues/IssuesPage";
 import IssueDetailsPage from "../pages/issues/IssueDetailsPage";
 
+// Label pages
+import LabelsPage from "../pages/labels/LabelsPage";
+import LabelDetailsPage from "../pages/labels/LabelDetailsPage";
 
 // Other Pages
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
 import ProfilePage from "../pages/profile/ProfilePage";
-
 
 // Route Protection
 import ProtectedRoute from "./ProtectedRoute";
@@ -117,6 +119,15 @@ export default function AppRouter() {
           }
         />
 
+        {/* Organization Labels */}
+<Route
+  path="/organizations/:organizationId/labels"
+  element={
+    <ProtectedRoute>
+      <LabelsPage />
+    </ProtectedRoute>
+  }
+/>
 
 
         {/* PROJECTS */}
@@ -169,7 +180,15 @@ export default function AppRouter() {
           }
         />
 
-
+        {/* Label Details */}
+<Route
+  path="/labels/:labelId"
+  element={
+    <ProtectedRoute>
+      <LabelDetailsPage />
+    </ProtectedRoute>
+  }
+/>
 
         {/* USER */}
 
