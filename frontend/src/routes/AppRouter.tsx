@@ -124,14 +124,14 @@ export default function AppRouter() {
         />
 
         {/* Organization Labels */}
-<Route
-  path="/organizations/:organizationId/labels"
-  element={
-    <ProtectedRoute>
-      <LabelsPage />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/organizations/:organizationId/labels"
+          element={
+            <ProtectedRoute>
+              <LabelsPage />
+            </ProtectedRoute>
+          }
+        />
 
 
         {/* PROJECTS */}
@@ -185,35 +185,35 @@ export default function AppRouter() {
         />
 
         {/* Label Details */}
-<Route
-  path="/labels/:labelId"
-  element={
-    <ProtectedRoute>
-      <LabelDetailsPage />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/labels/:labelId"
+          element={
+            <ProtectedRoute>
+              <LabelDetailsPage />
+            </ProtectedRoute>
+          }
+        />
 
-// Project Milestones
-<Route
-  path="/projects/:projectId/milestones"
-  element={
-    <ProtectedRoute>
-      <MilestonesPage />
-    </ProtectedRoute>
-  }
-/>
+{/* // Project Milestones */}
+        <Route
+          path="/projects/:projectId/milestones"
+          element={
+            <ProtectedRoute>
+              <MilestonesPage />
+            </ProtectedRoute>
+          }
+        />
 
 
-// Single Milestone Details
-<Route
-  path="/milestones/:milestoneId"
-  element={
-    <ProtectedRoute>
-      <MilestoneDetailsPage />
-    </ProtectedRoute>
-  }
-/>
+{/* Single Milestone Details */}
+        <Route
+          path="/milestones/:milestoneId"
+          element={
+            <ProtectedRoute>
+              <MilestoneDetailsPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* USER */}
 
