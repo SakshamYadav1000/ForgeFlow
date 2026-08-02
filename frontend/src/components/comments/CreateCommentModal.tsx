@@ -1,14 +1,20 @@
 import { useState } from "react";
 
-interface Props {
+
+interface CreateCommentModalProps {
+
   onCreate: (
     content: string
   ) => Promise<void>;
+
 }
+
+
 
 export default function CreateCommentModal({
   onCreate,
-}: Props) {
+}: CreateCommentModalProps) {
+
 
   const [content, setContent] =
     useState("");
@@ -17,28 +23,27 @@ export default function CreateCommentModal({
     useState(false);
 
 
-  const handleSubmit = async () => {
 
-    if (!content.trim()) {
-      alert("Comment cannot be empty.");
-      return;
-    }
+  const handleSubmit = async (
+    e: React.FormEvent
+  ) => {
+
+    e.preventDefault();
+
+
+    if (!content.trim()) return;
+
 
     try {
 
       setLoading(true);
 
+
       await onCreate(content);
+
 
       setContent("");
 
-    } catch (error) {
-
-      console.error(error);
-
-      alert(
-        "Failed to create comment."
-      );
 
     } finally {
 
@@ -49,33 +54,60 @@ export default function CreateCommentModal({
   };
 
 
+
   return (
-    <div className="rounded-xl bg-white p-6 shadow">
+
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-lg bg-white p-5 shadow"
+    >
 
       <h2 className="mb-4 text-xl font-semibold">
         Add Comment
       </h2>
 
+
       <textarea
-        className="mb-4 w-full rounded border p-3"
-        rows={4}
-        placeholder="Write a comment..."
+
         value={content}
+
         onChange={(e) =>
-          setContent(e.target.value)
+          setContent(
+            e.target.value
+          )
         }
+
+        placeholder="Write a comment..."
+
+        className="w-full rounded border p-3"
+
+        rows={4}
+
+        required
+
       />
 
+
+
       <button
-        onClick={handleSubmit}
+
+        type="submit"
+
         disabled={loading}
-        className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:bg-green-400"
+
+        className="mt-4 rounded bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
+
       >
+
         {loading
-          ? "Posting..."
-          : "Post Comment"}
+          ? "Adding..."
+          : "Add Comment"}
+
       </button>
 
-    </div>
+
+    </form>
+
   );
+
 }

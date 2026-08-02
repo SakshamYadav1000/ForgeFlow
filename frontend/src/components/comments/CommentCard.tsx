@@ -1,59 +1,98 @@
 import type { Comment } from "../../types/comment";
 
+
 interface CommentCardProps {
+
   comment: Comment;
-  onEdit: (comment: Comment) => void;
-  onDelete: (commentId: number) => void;
+
+  onEdit: (
+    comment: Comment
+  ) => void;
+
+  onDelete: (
+    commentId: number
+  ) => void;
+
 }
+
+
 
 export default function CommentCard({
   comment,
   onEdit,
   onDelete,
 }: CommentCardProps) {
+
+
   return (
-    <div className="rounded-xl border bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between">
 
-        <div className="flex-1">
+    <div className="rounded-lg bg-white p-5 shadow">
 
-          <p className="whitespace-pre-wrap">
-            {comment.content}
-          </p>
 
-          <p className="mt-4 text-xs text-gray-500">
-            User #{comment.user_id}
-          </p>
+      {/* Comment content */}
 
-          <p className="text-xs text-gray-400">
-            {new Date(
-              comment.created_at
-            ).toLocaleString()}
-          </p>
+      <p className="text-gray-700">
+        {comment.content}
+      </p>
 
-        </div>
 
-        <div className="ml-6 flex gap-2">
 
-          <button
-            onClick={() => onEdit(comment)}
-            className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
-          >
-            Edit
-          </button>
+      <div className="mt-3 text-sm text-gray-500">
 
-          <button
-            onClick={() =>
-              onDelete(comment.id)
-            }
-            className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-          >
-            Delete
-          </button>
+        <p>
+          User ID: {comment.user_id}
+        </p>
 
-        </div>
+
+        <p>
+          Created:
+          {" "}
+          {new Date(
+            comment.created_at
+          ).toLocaleString()}
+        </p>
+
 
       </div>
+
+
+
+
+      <div className="mt-4 flex gap-3">
+
+
+        <button
+
+          onClick={() =>
+            onEdit(comment)
+          }
+
+          className="rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600"
+
+        >
+
+          Edit
+
+        </button>
+
+
+
+
+        <button
+  onClick={() =>
+    onDelete(comment.id)
+  }
+  className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+>
+  Delete
+</button>
+
+
+      </div>
+
+
     </div>
+
   );
+
 }

@@ -30,6 +30,10 @@ import IssueDetailsPage from "../pages/issues/IssueDetailsPage";
 import LabelsPage from "../pages/labels/LabelsPage";
 import LabelDetailsPage from "../pages/labels/LabelDetailsPage";
 
+// Milestone pages
+import MilestonesPage from "../pages/milestones/MilestonesPage";
+import MilestoneDetailsPage from "../pages/milestones/MilestoneDetailsPage";
+
 // Other Pages
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
@@ -186,6 +190,27 @@ export default function AppRouter() {
   element={
     <ProtectedRoute>
       <LabelDetailsPage />
+    </ProtectedRoute>
+  }
+/>
+
+// Project Milestones
+<Route
+  path="/projects/:projectId/milestones"
+  element={
+    <ProtectedRoute>
+      <MilestonesPage />
+    </ProtectedRoute>
+  }
+/>
+
+
+// Single Milestone Details
+<Route
+  path="/milestones/:milestoneId"
+  element={
+    <ProtectedRoute>
+      <MilestoneDetailsPage />
     </ProtectedRoute>
   }
 />

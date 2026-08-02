@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import {
+  useParams,
+  Link,
+} from "react-router-dom";
 
 import MainLayout from "../../layouts/MainLayout";
 
@@ -12,8 +15,6 @@ import {
 } from "../../services/projectService";
 
 import type { Project } from "../../types/project";
-
-import { Link } from "react-router-dom";
 
 
 export default function ProjectDetailsPage() {
@@ -54,8 +55,7 @@ export default function ProjectDetailsPage() {
 
       setProject(data);
 
-
-    } catch(error){
+    } catch(error) {
 
       console.error(error);
 
@@ -70,7 +70,6 @@ export default function ProjectDetailsPage() {
 
 
 
-  // Load project
   useEffect(() => {
 
     fetchProject();
@@ -101,11 +100,10 @@ export default function ProjectDetailsPage() {
       );
 
 
-      // Close modal
+
       setEditing(false);
 
 
-      // Refresh project details
       await fetchProject();
 
 
@@ -114,7 +112,9 @@ export default function ProjectDetailsPage() {
       );
 
 
-    } catch(error){
+
+    } catch(error) {
+
 
       console.error(error);
 
@@ -126,49 +126,57 @@ export default function ProjectDetailsPage() {
 
   };
 
-// Delete Project
-const handleDeleteProject = async () => {
 
-  if (!projectId) return;
-
-
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this project?"
-  );
+  // Delete project
+  const handleDeleteProject = async () => {
 
 
-  if (!confirmDelete) return;
+    if (!projectId) return;
+
+    const confirmDelete =
+      window.confirm(
+        "Are you sure you want to delete this project?"
+      );
 
 
-  try {
-
-    await deleteProject(
-      Number(projectId)
-    );
+    if (!confirmDelete) return;
 
 
-    alert(
-      "Project deleted successfully!"
-    );
+    try {
 
 
-    // Redirect after delete
-    window.location.href =
-      `/organizations/${project?.organization_id}/projects`;
+      await deleteProject(
+        Number(projectId)
+      );
 
 
-  } catch(error){
+      alert(
+        "Project deleted successfully!"
+      );
 
-    console.error(error);
 
 
-    alert(
-      "Failed to delete project."
-    );
+      window.location.href =
+        `/organizations/${project?.organization_id}/projects`;
 
-  }
 
-};
+
+    } catch(error) {
+
+
+      console.error(error);
+
+
+
+      alert(
+        "Failed to delete project."
+      );
+
+
+    }
+
+
+  };
 
 
   return (
@@ -176,137 +184,152 @@ const handleDeleteProject = async () => {
     <MainLayout>
 
 
-      {
-        loading ? (
+      {loading ? (
 
-          <p>
-            Loading...
+        <p>
+          Loading...
+        </p>
+
+
+      ) : project ? (
+
+
+        <div className="rounded-xl bg-white p-6 shadow">
+
+
+          {/* Project Details */}
+
+          <h1 className="text-3xl font-bold">
+            {project.name}
+          </h1>
+
+
+
+          <p className="mt-4 text-gray-600">
+            {project.description}
           </p>
 
 
-        ) : project ? (
+
+          <p className="mt-4 text-sm text-gray-400">
+            Key: {project.key}
+          </p>
 
 
-          <div className="rounded-xl bg-white p-6 shadow">
+          {/* Project Modules */}
 
-  <h1 className="text-3xl font-bold">
-    {project.name}
-  </h1>
+          <div className="mt-6 flex gap-4">
 
 
-  <p className="mt-4 text-gray-600">
-    {project.description}
-  </p>
+            {/* Issues */}
+
+            <Link
+
+              to={`/projects/${project.id}/issues`}
+
+              className="rounded-lg bg-green-600 px-5 py-2 text-white hover:bg-green-700"
+
+            >
+
+              View Issues
+
+            </Link>
+
+            {/* Milestones */}
+
+            <Link
+
+              to={`/projects/${project.id}/milestones`}
+
+              className="rounded-lg bg-purple-600 px-5 py-2 text-white hover:bg-purple-700"
+
+            >
+
+              View Milestones
+
+            </Link>
 
 
-  <p className="mt-4 text-sm text-gray-400">
-    Key: {project.key}
-  </p>
+          </div>
+
+          {/* Project Actions */}
+
+          <div className="mt-8 flex gap-4">
 
 
-  <Link
-    to={`/projects/${project.id}/issues`}
-    className="mt-6 inline-block rounded-lg bg-green-600 px-5 py-2 text-white hover:bg-green-700"
-  >
-    View Issues
-  </Link>
+            {/* PATCH /projects/{project_id} */}
 
+            <button
 
+              onClick={() =>
+                setEditing(true)
+              }
 
-            {/* Project Details */}
+              className="rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600"
 
-            <h1 className="text-3xl font-bold">
-              {project.name}
-            </h1>
+            >
 
+              Edit Project
 
-            <p className="mt-4 text-gray-600">
-              {project.description}
-            </p>
+            </button>
 
+            {/* DELETE /projects/{project_id} */}
 
-            <p className="mt-4 text-sm text-gray-400">
-              Key: {project.key}
-            </p>
+            <button
 
+              onClick={handleDeleteProject}
 
+              className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
 
+            >
 
-            <div className="mt-6 flex gap-4">
+              Delete Project
 
-  {/* PATCH /projects/{project_id} */}
-  <button
+            </button>
 
-    onClick={() =>
-      setEditing(true)
-    }
-
-    className="rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600"
-
-  >
-    Edit Project
-
-  </button>
-
-
-
-  {/* DELETE /projects/{project_id} */}
-  <button
-
-    onClick={handleDeleteProject}
-
-    className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-
-  >
-
-    Delete Project
-
-  </button>
-
-
-</div>
-
-
-
-
-            {/* 
-              PATCH /projects/{project_id}
-            */}
-
-            {
-              editing && (
-
-                <div className="mt-6">
-
-                  <EditProjectModal
-
-                    project={project}
-
-                    onUpdate={
-                      handleUpdateProject
-                    }
-
-                  />
-
-                </div>
-
-              )
-            }
 
 
           </div>
 
 
-        ) : (
+          {/* Edit Modal */}
+
+          {editing && (
+
+            <div className="mt-6">
 
 
-          <p>
-            Project not found.
-          </p>
+              <EditProjectModal
+
+                project={project}
+
+                onUpdate={
+                  handleUpdateProject
+                }
+
+              />
 
 
-        )
-      }
+            </div>
+
+          )}
+
+
+
+        </div>
+
+
+
+      ) : (
+
+
+        <p>
+          Project not found.
+        </p>
+
+
+      )}
+
 
 
     </MainLayout>
