@@ -1,117 +1,246 @@
 import { useEffect, useState } from "react";
 
-import { getDashboard } from "../../services/dashboardService";
-import type { DashboardStats } from "../../types/dashboard";
 import MainLayout from "../../layouts/MainLayout";
 
-import StatCard from "../../components/ui/StatCard";
+import StatCard from "../../components/dashboard/StatCard";
+import IssueStatusChart from "../../components/dashboard/IssueStatusChart";
+import PriorityChart from "../../components/dashboard/PriorityChart";
+import ActivityFeed from "../../components/dashboard/ActivityFeed";
+import NotificationPanel from "../../components/dashboard/NotificationPanel";
 
 import {
-  ClipboardList,
-  Clock3,
-  LoaderCircle,
-  CheckCircle2,
-  AlertTriangle,
-  CircleDot,
-  Flag,
-  CalendarDays,
-  CheckCheck,
-  Activity,
-} from "lucide-react";
+  getDashboard,
+} from "../../services/dashboardService";
+
+import type {
+  DashboardResponse,
+} from "../../types/dashboard";
+
+
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+
+
+  const [dashboard, setDashboard] =
+    useState<DashboardResponse | null>(null);
+
+
+
+  const [loading, setLoading] =
+    useState(true);
+
+
+
+  const fetchDashboard = async () => {
+
+    try {
+
+      const data =
+        await getDashboard();
+
+
+      setDashboard(data);
+
+
+    } catch(error) {
+
+      console.error(
+        "Failed to fetch dashboard",
+        error
+      );
+
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const data = await getDashboard(2);
-        setStats(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
 
     fetchDashboard();
+
   }, []);
 
-  if (!stats) {
-    return <h1 className="p-8 text-2xl">Loading...</h1>;
-  }
+
+
+
 
   return (
+
     <MainLayout>
-      <h1 className="mb-8 text-3xl font-bold">
-        Dashboard
-      </h1>
 
-      <div className="grid grid-cols-4 gap-6">
-        <StatCard
-  title="Total Issues"
-  value={stats.total_issues}
-  icon={<ClipboardList size={24} />}
-/>
 
-<StatCard
-  title="Todo"
-  value={stats.todo}
-  icon={<Clock3 size={24} />}
-/>
+      {
+        loading ? (
 
-<StatCard
-  title="In Progress"
-  value={stats.in_progress}
-  icon={<LoaderCircle size={24} />}
-/>
+          <p>
+            Loading dashboard...
+          </p>
 
-<StatCard
-  title="Completed"
-  value={stats.done}
-  icon={<CheckCircle2 size={24} />}
-/>
 
-<StatCard
-  title="High Priority"
-  value={stats.high_priority}
-  icon={<AlertTriangle size={24} />}
-/>
+        ) : dashboard ? (
 
-<StatCard
-  title="Medium Priority"
-  value={stats.medium_priority}
-  icon={<CircleDot size={24} />}
-/>
 
-<StatCard
-  title="Low Priority"
-  value={stats.low_priority}
-  icon={<Flag size={24} />}
-/>
+          <div className="space-y-8">
 
-<StatCard
-  title="Overdue Issues"
-  value={stats.overdue_issues}
-  icon={<AlertTriangle size={24} />}
-/>
 
-<StatCard
-  title="Milestones"
-  value={stats.total_milestones}
-  icon={<CalendarDays size={24} />}
-/>
+            {/* Header */}
 
-<StatCard
-  title="Completed Milestones"
-  value={stats.completed_milestones}
-  icon={<CheckCheck size={24} />}
-/>
+            <div>
 
-<StatCard
-  title="Recent Activity"
-  value={stats.recent_activity}
-  icon={<Activity size={24} />}
-/>
-      </div>
+              <h1 className="text-3xl font-bold">
+                ForgeFlow Dashboard
+              </h1>
+
+
+              <p className="mt-2 text-gray-500">
+                Overview of your projects, issues and activities
+              </p>
+
+            </div>
+
+
+
+
+
+            {/* Statistics Cards */}
+
+            <div className="grid gap-6 md:grid-cols-4">
+
+
+              <StatCard
+
+                title="Organizations"
+
+                value={
+                  dashboard.organizations
+                }
+
+              />
+
+
+
+              <StatCard
+
+                title="Projects"
+
+                value={
+                  dashboard.projects
+                }
+
+              />
+
+
+
+              <StatCard
+
+                title="Assigned Issues"
+
+                value={
+                  dashboard.assigned_issues
+                }
+
+              />
+
+
+
+              <StatCard
+
+                title="Reported Issues"
+
+                value={
+                  dashboard.reported_issues
+                }
+
+              />
+
+
+            </div>
+
+
+
+
+
+            {/* Charts */}
+
+            <div className="grid gap-6 md:grid-cols-2">
+
+
+              <IssueStatusChart
+
+                data={
+                  dashboard.issue_status
+                }
+
+              />
+
+
+
+              <PriorityChart
+
+                data={
+                  dashboard.priority
+                }
+
+              />
+
+
+            </div>
+
+
+
+
+
+            {/* Activity + Notifications */}
+
+            <div className="grid gap-6 md:grid-cols-2">
+
+
+              <ActivityFeed
+
+                activities={
+                  dashboard.recent_activity
+                }
+
+              />
+
+
+
+              <NotificationPanel
+
+                notifications={
+                  dashboard.notifications
+                }
+
+              />
+
+
+            </div>
+
+
+
+          </div>
+
+
+        ) : (
+
+
+          <p>
+            Failed to load dashboard.
+          </p>
+
+
+        )
+      }
+
+
     </MainLayout>
+
   );
+
 }

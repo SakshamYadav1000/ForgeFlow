@@ -1,12 +1,20 @@
 import api from "./api";
-import type { Dashboard } from "../types/dashboard";
 
-export const getDashboard = async (
-  projectId: number
-): Promise<Dashboard> => {
-  const response = await api.get(
-    `/dashboard/projects/${projectId}`
-  );
+import type {
+  DashboardResponse,
+} from "../types/dashboard";
 
-  return response.data;
-};
+
+
+export const getDashboard =
+  async (): Promise<DashboardResponse> => {
+
+    const response =
+      await api.get<DashboardResponse>(
+        "/dashboard"
+      );
+
+
+    return response.data;
+
+  };
