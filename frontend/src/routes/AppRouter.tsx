@@ -34,6 +34,9 @@ import LabelDetailsPage from "../pages/labels/LabelDetailsPage";
 import MilestonesPage from "../pages/milestones/MilestonesPage";
 import MilestoneDetailsPage from "../pages/milestones/MilestoneDetailsPage";
 
+// Activity pages
+import MyActivityPage from "../pages/activity/MyActivityPage";
+
 // Other Pages
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import NotificationsPage from "../pages/notifications/NotificationsPage";
@@ -247,6 +250,14 @@ export default function AppRouter() {
           }
         />
 
+          <Route
+ path="/activity"
+ element={
+  <ProtectedRoute>
+    <MyActivityPage />
+  </ProtectedRoute>
+ }
+/>
 
         {/* Profile */}
         <Route

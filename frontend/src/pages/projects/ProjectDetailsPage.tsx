@@ -16,6 +16,17 @@ import {
 
 import type { Project } from "../../types/project";
 
+// activity
+import ActivityCard from "../../components/activity/ActivityCard";
+
+import {
+  getProjectActivity,
+} from "../../services/activityService";
+
+import type {
+  ActivityLog,
+} from "../../types/activity";
+
 
 export default function ProjectDetailsPage() {
 
@@ -37,7 +48,9 @@ export default function ProjectDetailsPage() {
   const [loading, setLoading] =
     useState(true);
 
-
+  // Activity logs  
+  const [activities, setActivities] =
+  useState<ActivityLog[]>([]);
 
   // Fetch project details
   const fetchProject = async () => {
@@ -68,11 +81,33 @@ export default function ProjectDetailsPage() {
 
   };
 
+// Fetch project activity
+const fetchActivity = async () => {
 
+  if (!projectId) return;
+
+  try {
+
+    const data =
+      await getProjectActivity(
+        Number(projectId)
+      );
+
+    setActivities(data);
+
+  } catch(error) {
+
+    console.error(error);
+
+  }
+
+};
 
   useEffect(() => {
 
     fetchProject();
+    fetchActivity();
+
 
   }, [projectId]);
 
@@ -291,6 +326,46 @@ export default function ProjectDetailsPage() {
 
           </div>
 
+           {/* Activity Logs */}
+
+<div className="mt-10">
+
+  <h2 className="mb-4 text-2xl font-bold">
+    Activity
+  </h2>
+
+
+  {
+    activities.length === 0 ? (
+
+      <p className="text-gray-500">
+        No activity yet.
+      </p>
+
+    ) : (
+
+      <div className="space-y-4">
+
+        {
+          activities.map((activity) => (
+
+            <ActivityCard
+
+              key={activity.id}
+
+              activity={activity}
+
+            />
+
+          ))
+        }
+
+      </div>
+
+    )
+  }
+
+</div>   
 
           {/* Edit Modal */}
 

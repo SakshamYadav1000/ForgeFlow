@@ -9,6 +9,7 @@ import {
     Bug,
     Bell,
     User,
+    Activity,
 } from "lucide-react";
 
 interface MainLayoutProps {
@@ -91,6 +92,23 @@ export default function MainLayout({
                         <User size={20} />
                         Profile
                     </NavLink>
+
+<NavLink
+ to="/activity"
+ className={({isActive}) =>
+ `flex items-center gap-3 rounded px-4 py-3 ${
+ isActive
+ ? "bg-blue-600 text-white"
+ : "hover:bg-gray-800"
+ }`
+}
+>
+
+<Activity size={20}/>
+
+Activity
+
+</NavLink>
 
                     <NavLink
                         to="/organizations"

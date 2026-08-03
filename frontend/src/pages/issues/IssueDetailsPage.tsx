@@ -67,6 +67,16 @@ import {
   deleteDependency,
 } from "../../services/issueDependencyService";
 
+import ActivitySection from "../../components/activity/ActivityCard";
+
+import {
+  getIssueActivity,
+} from "../../services/activityService";
+
+import type {
+  ActivityLog,
+} from "../../types/activity";
+
 export default function IssueDetailsPage() {
   const { issueId } = useParams();
 
@@ -122,6 +132,10 @@ export default function IssueDetailsPage() {
 
   const [dependencySaving, setDependencySaving] =
     useState(false);
+
+  // Activity logs
+  const [activities, setActivities] =
+    useState<ActivityLog[]>([]);
 
   // fetching
 
@@ -189,11 +203,34 @@ export default function IssueDetailsPage() {
     }
   };
 
+  //fetch activity logs
+  const fetchActivity = async () => {
+
+    if (!issueId) return;
+
+    try {
+
+      const data =
+        await getIssueActivity(
+          Number(issueId)
+        );
+
+      setActivities(data);
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+  };
+
   useEffect(() => {
     fetchIssue();
     fetchComments();
     fetchLabels();
     fetchDependencies();
+    fetchActivity();
   }, [issueId]);
 
   useEffect(() => {
@@ -810,6 +847,48 @@ export default function IssueDetailsPage() {
             </div>
           </div>
 
+          {/* Activity Logs */}
+
+          <div className="mt-10">
+
+            <h2 className="mb-4 text-2xl font-bold">
+              Activity
+            </h2>
+
+
+            {
+              activities.length === 0 ? (
+
+                <p className="text-gray-500">
+                  No activity yet.
+                </p>
+
+              ) : (
+
+                <div className="space-y-4">
+
+                  {
+                    activities.map((activity) => (
+
+                      <ActivitySection
+
+                        key={activity.id}
+
+                        activity={activity}
+
+                      />
+
+                    ))
+                  }
+
+                </div>
+
+              )
+            }
+
+
+          </div>
+
           <EditIssueModal
             open={showEditModal}
             issue={issue}
@@ -853,7 +932,6 @@ export default function IssueDetailsPage() {
             loading={dependencySaving}
             onCreate={handleCreateDependency}
           />
-
         </>
       )}
     </MainLayout>
