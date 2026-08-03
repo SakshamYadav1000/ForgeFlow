@@ -1,123 +1,222 @@
 from sqlalchemy.orm import Session
 
+from app.repositories.project_repository import ProjectRepository
+from app.repositories.issue_repository import IssueRepository
+from app.repositories.activity_log_repository import ActivityLogRepository
+from app.repositories.notification_repository import NotificationRepository
+from app.repositories.organization_repository import OrganizationRepository
+
 from app.models.issue import (
-    IssuePriority,
     IssueStatus,
+    IssuePriority,
 )
-from app.models.user import User
-from app.repositories.activity_log_repository import (
-    ActivityLogRepository,
-)
-from app.repositories.issue_repository import (
-    IssueRepository,
-)
-from app.repositories.milestone_repository import (
-    MilestoneRepository,
-)
-from app.repositories.organization_member_repository import (
-    OrganizationMemberRepository,
-)
-from app.repositories.project_repository import (
-    ProjectRepository,
-)
-from app.schemas.dashboard import DashboardResponse
 
 
 class DashboardService:
+
+
     def __init__(
         self,
         db: Session,
     ):
-        self.project_repository = ProjectRepository(db)
 
-        self.organization_member_repository = (
-            OrganizationMemberRepository(db)
-        )
+        self.db = db
 
-        self.issue_repository = (
-            IssueRepository(db)
-        )
+        self.project_repo = ProjectRepository(db)
 
-        self.milestone_repository = (
-            MilestoneRepository(db)
-        )
+        self.issue_repo = IssueRepository(db)
 
-        self.activity_repository = (
-            ActivityLogRepository(db)
-        )
+        self.activity_repo = ActivityLogRepository(db)
+
+        self.notification_repo = NotificationRepository(db)
+
+        self.organization_repo = OrganizationRepository(db)
+
+
 
     def get_dashboard(
         self,
-        project_id: int,
-        current_user: User,
+        current_user,
     ):
-        project = (
-            self.project_repository.get_by_id(
-                project_id
+
+
+        # Organizations user belongs to
+
+        organizations = (
+            self.organization_repo
+            .get_user_organizations(
+                current_user.id
             )
         )
 
-        if project is None:
-            raise ValueError("Project not found")
 
-        member = (
-            self.organization_member_repository.get_member(
-                project.organization_id,
+
+        # Projects user belongs to
+
+        projects = (
+            self.project_repo
+            .get_user_projects(
+                current_user.id
+            )
+        )
+
+
+
+        project_ids = [
+            project.id
+            for project in projects
+        ]
+
+
+
+        # Issues from user's projects
+
+        issues = (
+            self.issue_repo
+            .get_by_projects(
+                project_ids
+            )
+        )
+
+
+
+        # Assigned issues
+
+        assigned_issues = [
+            issue
+            for issue in issues
+            if issue.assignee_id == current_user.id
+        ]
+
+
+
+        # Reported issues
+
+        reported_issues = [
+            issue
+            for issue in issues
+            if issue.reporter_id == current_user.id
+        ]
+
+
+
+        # Issue status distribution
+
+        issue_status = {
+
+            "todo": 0,
+
+            "in_progress": 0,
+
+            "done": 0,
+
+        }
+
+
+
+        for issue in assigned_issues:
+
+
+            if issue.status == IssueStatus.TODO:
+
+                issue_status["todo"] += 1
+
+
+            elif issue.status == IssueStatus.IN_PROGRESS:
+
+                issue_status["in_progress"] += 1
+
+
+            elif issue.status == IssueStatus.DONE:
+
+                issue_status["done"] += 1
+
+
+
+
+        # Priority distribution
+
+        priority = {
+
+            "high": 0,
+
+            "medium": 0,
+
+            "low": 0,
+
+        }
+
+
+
+        for issue in assigned_issues:
+
+
+            if issue.priority == IssuePriority.HIGH:
+
+                priority["high"] += 1
+
+
+            elif issue.priority == IssuePriority.MEDIUM:
+
+                priority["medium"] += 1
+
+
+            elif issue.priority == IssuePriority.LOW:
+
+                priority["low"] += 1
+
+
+
+
+        # Recent user activity
+
+        recent_activity = (
+            self.activity_repo
+            .get_recent_user_activity(
                 current_user.id,
+                limit=5,
             )
         )
 
-        if member is None:
-            raise ValueError("Access denied")
 
-        return DashboardResponse(
-            total_issues=self.issue_repository.count_by_project(
-                project_id
-            ),
 
-            todo=self.issue_repository.count_by_status(
-                project_id,
-                IssueStatus.TODO,
-            ),
+        # Recent notifications
 
-            in_progress=self.issue_repository.count_by_status(
-                project_id,
-                IssueStatus.IN_PROGRESS,
-            ),
-
-            done=self.issue_repository.count_by_status(
-                project_id,
-                IssueStatus.DONE,
-            ),
-
-            low_priority=self.issue_repository.count_by_priority(
-                project_id,
-                IssuePriority.LOW,
-            ),
-
-            medium_priority=self.issue_repository.count_by_priority(
-                project_id,
-                IssuePriority.MEDIUM,
-            ),
-
-            high_priority=self.issue_repository.count_by_priority(
-                project_id,
-                IssuePriority.HIGH,
-            ),
-
-            overdue_issues=self.issue_repository.count_overdue(
-                project_id
-            ),
-
-            total_milestones=self.milestone_repository.count_by_project(
-                project_id
-            ),
-
-            completed_milestones=self.milestone_repository.count_completed(
-                project_id
-            ),
-
-            recent_activity=self.activity_repository.count_project_activity(
-                project_id
-            ),
+        notifications = (
+            self.notification_repo
+            .get_recent_notifications(
+                current_user.id,
+                limit=5,
+            )
         )
+
+
+
+        return {
+
+
+            "organizations": len(organizations),
+
+
+            "projects": len(projects),
+
+
+            "assigned_issues": len(assigned_issues),
+
+
+            "reported_issues": len(reported_issues),
+
+
+            "issue_status": issue_status,
+
+
+            "priority": priority,
+
+
+            "recent_activity": recent_activity,
+
+
+            "notifications": notifications,
+
+
+        }

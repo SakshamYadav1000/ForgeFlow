@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 
+from app.models.organization_member import OrganizationMember
 from app.models.project import Project
 
 
@@ -27,6 +28,26 @@ class ProjectRepository:
             self.db.query(Project)
             .filter(Project.id == project_id)
             .first()
+        )
+
+
+
+    def get_user_projects(
+        self,
+        user_id: int,
+    ):
+
+        return (
+            self.db.query(Project)
+            .join(
+                OrganizationMember,
+                Project.organization_id ==
+                OrganizationMember.organization_id
+            )
+            .filter(
+                OrganizationMember.user_id == user_id
+            )
+            .all()
         )
 
     def get_by_key(

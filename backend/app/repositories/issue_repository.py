@@ -2,41 +2,53 @@ from sqlalchemy.orm import Session
 
 from sqlalchemy import func
 
-from datetime import datetime
-
 from app.models.issue import (
     Issue,
     IssuePriority,
     IssueStatus,
 )
 
+
 class IssueRepository:
-    def __init__(self, db: Session):
+
+    def __init__(
+        self,
+        db: Session,
+    ):
         self.db = db
+
 
     def create(
         self,
         issue: Issue,
     ) -> Issue:
+
         self.db.add(issue)
         self.db.commit()
         self.db.refresh(issue)
+
         return issue
+
 
     def get_by_id(
         self,
         issue_id: int,
     ) -> Issue | None:
+
         return (
             self.db.query(Issue)
-            .filter(Issue.id == issue_id)
+            .filter(
+                Issue.id == issue_id
+            )
             .first()
         )
+
 
     def get_by_projects(
         self,
         project_ids: list[int],
     ):
+
         return (
             self.db.query(Issue)
             .filter(
@@ -45,10 +57,12 @@ class IssueRepository:
             .all()
         )
 
+
     def get_by_project(
         self,
         project_id: int,
     ):
+
         return (
             self.db.query(Issue)
             .filter(
@@ -56,6 +70,7 @@ class IssueRepository:
             )
             .all()
         )
+
 
     def search(
         self,
@@ -71,39 +86,49 @@ class IssueRepository:
         sort_by: str = "created_at",
         order: str = "desc",
     ):
+
         query = self.db.query(Issue).filter(
             Issue.project_id == project_id
         )
 
+
         if title:
             query = query.filter(
-                Issue.title.ilike(f"%{title}%")
+                Issue.title.ilike(
+                    f"%{title}%"
+                )
             )
+
 
         if status:
             query = query.filter(
                 Issue.status == status
             )
 
+
         if priority:
             query = query.filter(
                 Issue.priority == priority
             )
+
 
         if assignee_id:
             query = query.filter(
                 Issue.assignee_id == assignee_id
             )
 
+
         if milestone_id:
             query = query.filter(
                 Issue.milestone_id == milestone_id
             )
 
+
         if reporter_id:
             query = query.filter(
                 Issue.reporter_id == reporter_id
             )
+
 
         allowed_fields = {
             "created_at": Issue.created_at,
@@ -113,18 +138,28 @@ class IssueRepository:
             "status": Issue.status,
         }
 
+
         sort_column = allowed_fields.get(
             sort_by,
             Issue.created_at,
         )
 
+
         if order.lower() == "asc":
-            query = query.order_by(sort_column.asc())
-        
+
+            query = query.order_by(
+                sort_column.asc()
+            )
+
         else:
-            query = query.order_by(sort_column.desc())
+
+            query = query.order_by(
+                sort_column.desc()
+            )
+
 
         offset = (page - 1) * limit
+
 
         return (
             query.offset(offset)
@@ -132,31 +167,122 @@ class IssueRepository:
             .all()
         )
 
+
+
     def update(
         self,
         issue: Issue,
     ) -> Issue:
+
         self.db.commit()
         self.db.refresh(issue)
+
         return issue
+
+
 
     def delete(
         self,
         issue: Issue,
     ):
+
         self.db.delete(issue)
         self.db.commit()
 
-#Dashboard
+
+
+# ==========================
+# Dashboard
+# ==========================
+
+
+    def get_assigned_issues(
+        self,
+        user_id: int,
+    ):
+
+        return (
+            self.db.query(Issue)
+            .filter(
+                Issue.assignee_id == user_id
+            )
+            .all()
+        )
+
+
+
+    def get_reported_issues(
+        self,
+        user_id: int,
+    ):
+
+        return (
+            self.db.query(Issue)
+            .filter(
+                Issue.reporter_id == user_id
+            )
+            .all()
+        )
+
+
+
+    def count_user_issue_status(
+        self,
+        user_id: int,
+        status: IssueStatus,
+    ):
+
+        return (
+            self.db.query(
+                func.count(Issue.id)
+            )
+            .filter(
+                Issue.assignee_id == user_id,
+                Issue.status == status,
+            )
+            .scalar()
+        )
+
+
+
+    def count_user_issue_priority(
+        self,
+        user_id: int,
+        priority: IssuePriority,
+    ):
+
+        return (
+            self.db.query(
+                func.count(Issue.id)
+            )
+            .filter(
+                Issue.assignee_id == user_id,
+                Issue.priority == priority,
+            )
+            .scalar()
+        )
+
+
+
+# Existing project dashboard methods
+# Keeping them for future project analytics
+
+
     def count_by_project(
         self,
         project_id: int,
     ):
+
         return (
-            self.db.query(func.count(Issue.id))
-            .filter(Issue.project_id == project_id)
+            self.db.query(
+                func.count(Issue.id)
+            )
+            .filter(
+                Issue.project_id == project_id
+            )
             .scalar()
         )
+
 
 
     def count_by_status(
@@ -164,8 +290,11 @@ class IssueRepository:
         project_id: int,
         status: IssueStatus,
     ):
+
         return (
-            self.db.query(func.count(Issue.id))
+            self.db.query(
+                func.count(Issue.id)
+            )
             .filter(
                 Issue.project_id == project_id,
                 Issue.status == status,
@@ -174,13 +303,17 @@ class IssueRepository:
         )
 
 
+
     def count_by_priority(
         self,
         project_id: int,
         priority: IssuePriority,
     ):
+
         return (
-            self.db.query(func.count(Issue.id))
+            self.db.query(
+                func.count(Issue.id)
+            )
             .filter(
                 Issue.project_id == project_id,
                 Issue.priority == priority,
@@ -189,8 +322,10 @@ class IssueRepository:
         )
 
 
+
     def count_overdue(
         self,
         project_id: int,
     ):
+
         return 0

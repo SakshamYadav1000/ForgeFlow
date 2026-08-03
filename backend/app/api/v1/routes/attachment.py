@@ -4,6 +4,7 @@ from fastapi import (
     File,
     UploadFile,
 )
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -44,11 +45,11 @@ def upload_attachment(
 def get_issue_attachments(
     issue_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return AttachmentService(
-        db
-    ).get_issue_attachments(
-        issue_id
+    return AttachmentService(db).get_issue_attachments(
+        issue_id,
+        current_user,
     )
 
 
@@ -68,3 +69,14 @@ def delete_attachment(
     return {
         "message": "Attachment deleted successfully"
     }
+
+@router.get("/{attachment_id}/download")
+def download_attachment(
+    attachment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return AttachmentService(db).download_attachment(
+        attachment_id,
+        current_user,
+    )

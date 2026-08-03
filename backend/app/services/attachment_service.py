@@ -17,7 +17,7 @@ from app.repositories.attachment_repository import (
 from app.repositories.issue_repository import (
     IssueRepository,
 )
-
+from fastapi.responses import FileResponse
 
 UPLOAD_DIRECTORY = "uploads"
 
@@ -36,6 +36,38 @@ class AttachmentService:
             UPLOAD_DIRECTORY,
             exist_ok=True,
         )
+
+    def _ensure_issue_access(
+        self,
+        issue_id: int,
+        current_user: User,
+    ):
+        issue = self.issue_repository.get_by_id(issue_id)
+
+        if issue is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Issue not found",
+            )
+
+        project = self.project_repository.get_by_id(
+            issue.project_id
+        )
+
+        membership = (
+            self.organization_repository.get_user_organization(
+                project.organization_id,
+                current_user.id,
+            )
+        )
+
+        if membership is None:
+            raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not allowed",
+            )
+
+        return issue
 
     def upload_attachment(
         self,
@@ -92,22 +124,45 @@ class AttachmentService:
     def get_issue_attachments(
         self,
         issue_id: int,
+        current_user: User,
     ):
-        issue = self.issue_repository.get_by_id(
+        self._ensure_issue_access(issue_id, current_user)
+
+        return self.attachment_repository.get_issue_attachments(
             issue_id
         )
 
-        if issue is None:
+    def download_attachment(
+        self,
+        attachment_id: int,
+        current_user: User,
+    ):
+        attachment = self.attachment_repository.get_by_id(
+            attachment_id
+        )
+
+        if attachment is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Issue not found",
+                detail="Attachment not found",
             )
 
-        return (
-            self.attachment_repository.get_issue_attachments(
-                issue_id
-            )
+        self._ensure_issue_access(
+            attachment.issue_id,
+            current_user,
         )
+
+        if not os.path.exists(attachment.file_path):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="File not found",
+            )
+
+        return FileResponse(
+            path=attachment.file_path,
+            filename=attachment.file_name,
+            media_type=attachment.mime_type,
+        )    
 
     def delete_attachment(
         self,
