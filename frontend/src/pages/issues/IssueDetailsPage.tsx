@@ -67,7 +67,7 @@ import {
   deleteDependency,
 } from "../../services/issueDependencyService";
 
-import ActivitySection from "../../components/activity/ActivityCard";
+import ActivityCard from "../../components/activity/ActivityCard";
 
 import {
   getIssueActivity,
@@ -76,6 +76,20 @@ import {
 import type {
   ActivityLog,
 } from "../../types/activity";
+
+//for attachments
+import { Paperclip, Upload } from "lucide-react";
+
+import AttachmentCard from "../../components/attachments/AttachmentCard";
+import UploadAttachmentModal from "../../components/attachments/UploadAttachmentModal";
+
+import {
+  deleteAttachment,
+  getIssueAttachments,
+  uploadAttachment,
+} from "../../services/attachmentService";
+
+import type { Attachment } from "../../types/attachment";
 
 export default function IssueDetailsPage() {
   const { issueId } = useParams();
@@ -136,6 +150,19 @@ export default function IssueDetailsPage() {
   // Activity logs
   const [activities, setActivities] =
     useState<ActivityLog[]>([]);
+
+  // Attachments
+  const [attachments, setAttachments] =
+    useState<Attachment[]>([]);
+
+  const [showUploadAttachmentModal, setShowUploadAttachmentModal] =
+    useState(false);
+
+  const [attachmentSaving, setAttachmentSaving] =
+    useState(false);
+
+  const [deletingAttachmentId, setDeletingAttachmentId] =
+    useState<number | null>(null);
 
   // fetching
 
@@ -225,12 +252,81 @@ export default function IssueDetailsPage() {
 
   };
 
+  // Fetch attachments
+  const fetchAttachments = async () => {
+    if (!issueId) {
+      return;
+    }
+
+    try {
+      const data = await getIssueAttachments(
+        Number(issueId)
+      );
+
+      setAttachments(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleUploadAttachment = async (
+    file: File
+  ) => {
+    if (!issueId) {
+      return;
+    }
+
+    try {
+      setAttachmentSaving(true);
+
+      await uploadAttachment(
+        Number(issueId),
+        file
+      );
+
+      await fetchAttachments();
+
+      setShowUploadAttachmentModal(false);
+
+      alert("Attachment uploaded successfully!");
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to upload attachment.");
+    } finally {
+      setAttachmentSaving(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (
+    attachmentId: number
+  ) => {
+    try {
+      setDeletingAttachmentId(attachmentId);
+
+      await deleteAttachment(attachmentId);
+
+      await fetchAttachments();
+
+      alert("Attachment deleted successfully!");
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "Failed to delete attachment. You may only delete files you uploaded."
+      );
+    } finally {
+      setDeletingAttachmentId(null);
+    }
+  };
+
   useEffect(() => {
     fetchIssue();
     fetchComments();
     fetchLabels();
     fetchDependencies();
     fetchActivity();
+    fetchAttachments();
   }, [issueId]);
 
   useEffect(() => {
@@ -575,17 +671,15 @@ export default function IssueDetailsPage() {
         <p>Issue not found.</p>
       ) : (
         <>
-          {/* Header */}
+          {/* Issue header */}
           <div className="mb-8 flex items-center justify-between">
             <h1 className="text-3xl font-bold">
-              Issue Details
+              Issue
             </h1>
 
             <div className="flex gap-3">
               <button
-                onClick={() =>
-                  setShowEditModal(true)
-                }
+                onClick={() => setShowEditModal(true)}
                 className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
               >
                 Edit Issue
@@ -600,9 +694,8 @@ export default function IssueDetailsPage() {
             </div>
           </div>
 
-          {/* Issue Information */}
+          {/* Issue detail */}
           <div className="rounded-xl bg-white p-8 shadow">
-
             <h2 className="text-2xl font-bold">
               {issue.title}
             </h2>
@@ -611,132 +704,11 @@ export default function IssueDetailsPage() {
               {issue.description}
             </p>
 
-            {/* Labels */}
-            <div className="mt-8">
-
-              <div className="mb-4 flex items-center justify-between">
-
-                <h3 className="text-lg font-semibold">
-                  Labels
-                </h3>
-
-                <button
-                  onClick={() =>
-                    setShowAttachModal(true)
-                  }
-                  className="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-                >
-                  Attach Label
-                </button>
-
-              </div>
-
-              {labels.length === 0 ? (
-
-                <p className="text-gray-500">
-                  No labels attached.
-                </p>
-
-              ) : (
-
-                <div className="flex flex-wrap gap-3">
-
-                  {labels.map((label) => (
-
-                    <div
-                      key={label.id}
-                      className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white"
-                      style={{
-                        backgroundColor:
-                          label.color,
-                      }}
-                    >
-                      <span>
-                        {label.name}
-                      </span>
-
-                      <button
-                        onClick={() =>
-                          handleRemoveLabel(
-                            label.id
-                          )
-                        }
-                        className="font-bold"
-                      >
-                        ×
-                      </button>
-
-                    </div>
-
-                  ))}
-
-                </div>
-
-              )}
-
-            </div>
-
-            <div className="mt-10">
-
-              <h2 className="mb-4 text-2xl font-bold">
-                Dependencies
-              </h2>
-
-
-              {
-                dependenciesLoading ? (
-
-                  <p>
-                    Loading dependencies...
-                  </p>
-
-                ) : dependencies.length === 0 ? (
-
-                  <p className="text-gray-500">
-                    No dependencies.
-                  </p>
-
-                ) : (
-
-                  <div className="space-y-4">
-
-                    {
-                      dependencies.map(
-                        (dependency) => (
-
-                          <DependencyCard
-
-                            key={dependency.id}
-
-                            dependency={dependency}
-
-                            onDelete={
-                              handleDeleteDependency
-                            }
-
-                          />
-
-                        )
-                      )
-                    }
-
-                  </div>
-
-                )
-
-              }
-
-
-            </div>
-
-            {/* Issue Details */}
             <div className="mt-8 grid grid-cols-2 gap-6">
-
               <div>
                 <h3 className="text-sm text-gray-500">
                   Status
                 </h3>
-
                 <p className="font-semibold">
                   {issue.status}
                 </p>
@@ -746,7 +718,6 @@ export default function IssueDetailsPage() {
                 <h3 className="text-sm text-gray-500">
                   Priority
                 </h3>
-
                 <p className="font-semibold">
                   {issue.priority}
                 </p>
@@ -756,20 +727,15 @@ export default function IssueDetailsPage() {
                 <h3 className="text-sm text-gray-500">
                   Reporter
                 </h3>
-
-                <p>
-                  {issue.reporter_id}
-                </p>
+                <p>{issue.reporter_id}</p>
               </div>
 
               <div>
                 <h3 className="text-sm text-gray-500">
                   Assignee
                 </h3>
-
                 <p>
-                  {issue.assignee_id ??
-                    "Unassigned"}
+                  {issue.assignee_id ?? "Unassigned"}
                 </p>
               </div>
 
@@ -777,10 +743,8 @@ export default function IssueDetailsPage() {
                 <h3 className="text-sm text-gray-500">
                   Milestone
                 </h3>
-
                 <p>
-                  {issue.milestone_id ??
-                    "None"}
+                  {issue.milestone_id ?? "None"}
                 </p>
               </div>
 
@@ -788,7 +752,6 @@ export default function IssueDetailsPage() {
                 <h3 className="text-sm text-gray-500">
                   Project ID
                 </h3>
-
                 <p>{issue.project_id}</p>
               </div>
 
@@ -796,7 +759,6 @@ export default function IssueDetailsPage() {
                 <h3 className="text-sm text-gray-500">
                   Created
                 </h3>
-
                 <p>
                   {new Date(
                     issue.created_at
@@ -808,7 +770,6 @@ export default function IssueDetailsPage() {
                 <h3 className="text-sm text-gray-500">
                   Updated
                 </h3>
-
                 <p>
                   {new Date(
                     issue.updated_at
@@ -816,18 +777,139 @@ export default function IssueDetailsPage() {
                 </p>
               </div>
             </div>
+
+            {/* Labels */}
+            <div className="mt-10">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-xl font-bold">
+                  Labels
+                </h3>
+
+                <button
+                  onClick={() => setShowAttachModal(true)}
+                  className="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                >
+                  Attach Label
+                </button>
+              </div>
+
+              {labels.length === 0 ? (
+                <p className="text-gray-500">
+                  No labels attached.
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-3">
+                  {labels.map((label) => (
+                    <div
+                      key={label.id}
+                      className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-white"
+                      style={{
+                        backgroundColor: label.color,
+                      }}
+                    >
+                      <span>{label.name}</span>
+
+                      <button
+                        onClick={() =>
+                          handleRemoveLabel(label.id)
+                        }
+                        className="font-bold"
+                        title="Remove label"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Dependencies */}
+            <div className="mt-10">
+              <h2 className="mb-4 text-2xl font-bold">
+                Dependencies
+              </h2>
+
+              {dependenciesLoading ? (
+                <p>Loading dependencies...</p>
+              ) : dependencies.length === 0 ? (
+                <p className="text-gray-500">
+                  No dependencies.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {dependencies.map((dependency) => (
+                    <DependencyCard
+                      key={dependency.id}
+                      dependency={dependency}
+                      onDelete={handleDeleteDependency}
+                    />
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-5">
+                <CreateDependencyModal
+                  issues={projectIssues.filter(
+                    (item) => item.id !== issue.id
+                  )}
+                  loading={dependencySaving}
+                  onCreate={handleCreateDependency}
+                />
+              </div>
+            </div>
+
+            {/* Attachments */}
+            <div className="mt-10">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Paperclip size={22} />
+
+                  <h2 className="text-2xl font-bold">
+                    Attachments
+                  </h2>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowUploadAttachmentModal(true)
+                  }
+                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                  <Upload size={18} />
+                  Upload File
+                </button>
+              </div>
+
+              {attachments.length === 0 ? (
+                <p className="text-gray-500">
+                  No attachments yet.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {attachments.map((attachment) => (
+                    <AttachmentCard
+                      key={attachment.id}
+                      attachment={attachment}
+                      deleting={
+                        deletingAttachmentId === attachment.id
+                      }
+                      onDelete={handleDeleteAttachment}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="mt-8">
+          {/* Comments */}
+          <div className="mt-10">
             <h2 className="mb-4 text-2xl font-bold">
               Comments
             </h2>
 
-            <CreateCommentModal
-              onCreate={handleCreateComment}
-            />
-
-            <div className="mt-6 space-y-4">
+            <div className="space-y-4">
               {commentsLoading ? (
                 <p>Loading comments...</p>
               ) : comments.length === 0 ? (
@@ -845,57 +927,42 @@ export default function IssueDetailsPage() {
                 ))
               )}
             </div>
+
+            <div className="mt-6">
+              <CreateCommentModal
+                onCreate={handleCreateComment}
+              />
+            </div>
           </div>
 
-          {/* Activity Logs */}
-
+          {/* Activity */}
           <div className="mt-10">
-
             <h2 className="mb-4 text-2xl font-bold">
               Activity
             </h2>
 
-
-            {
-              activities.length === 0 ? (
-
-                <p className="text-gray-500">
-                  No activity yet.
-                </p>
-
-              ) : (
-
-                <div className="space-y-4">
-
-                  {
-                    activities.map((activity) => (
-
-                      <ActivitySection
-
-                        key={activity.id}
-
-                        activity={activity}
-
-                      />
-
-                    ))
-                  }
-
-                </div>
-
-              )
-            }
-
-
+            {activities.length === 0 ? (
+              <p className="text-gray-500">
+                No activity yet.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {activities.map((activity) => (
+                  <ActivityCard
+                    key={activity.id}
+                    activity={activity}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
+          {/* Modals */}
           <EditIssueModal
             open={showEditModal}
             issue={issue}
             loading={saving}
-            onClose={() =>
-              setShowEditModal(false)
-            }
+            onClose={() => setShowEditModal(false)}
             onSave={handleUpdate}
           />
 
@@ -912,25 +979,19 @@ export default function IssueDetailsPage() {
 
           <AttachLabelModal
             open={showAttachModal}
-            organizationId={
-              organizationId ?? 0
-            }
+            organizationId={organizationId ?? 0}
             loading={false}
-            onClose={() =>
-              setShowAttachModal(false)
-            }
+            onClose={() => setShowAttachModal(false)}
             onAttach={handleAttachLabel}
           />
 
-          <CreateDependencyModal
-            issues={
-              projectIssues.filter(
-                (item) =>
-                  item.id !== issue.id
-              )
+          <UploadAttachmentModal
+            open={showUploadAttachmentModal}
+            loading={attachmentSaving}
+            onClose={() =>
+              setShowUploadAttachmentModal(false)
             }
-            loading={dependencySaving}
-            onCreate={handleCreateDependency}
+            onUpload={handleUploadAttachment}
           />
         </>
       )}
